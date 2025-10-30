@@ -21,6 +21,7 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
 
     private static final int GCM_IV_LENGTH = 12; // 96 bits
     private static final int GCM_TAG_LENGTH = 128; // 128 bits
+    private static final int MIN_ENCRYPTED_DATA_LENGTH = GCM_IV_LENGTH + (GCM_TAG_LENGTH / 8); // 12 + 16 = 28 bytes
 
     @Value("${encryption.secret}")
     private String secretKey;
@@ -78,8 +79,8 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
             // Decode the Base64 data
             byte[] combined = Base64.getDecoder().decode(dbData);
             
-            // Validate minimum data length
-            if (combined.length < GCM_IV_LENGTH) {
+            // Validate minimum data length (IV + auth tag + at least some data)
+            if (combined.length < MIN_ENCRYPTED_DATA_LENGTH) {
                 throw new RuntimeException("Invalid encrypted data: too short");
             }
             
