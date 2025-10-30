@@ -28,11 +28,11 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
         }
         try {
             keyBytes = Base64.getDecoder().decode(secretKey);
-            if (!(keyBytes.length == 16 || keyBytes.length == 24 || keyBytes.length == 32)) {
-                throw new IllegalArgumentException("Encryption key must be 16, 24, or 32 bytes long");
-            }
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Encryption key must be a valid Base64-encoded string", e);
+        }
+        if (!(keyBytes.length == 16 || keyBytes.length == 24 || keyBytes.length == 32)) {
+            throw new IllegalArgumentException("Encryption key must be 16, 24, or 32 bytes long");
         }
     }
 
