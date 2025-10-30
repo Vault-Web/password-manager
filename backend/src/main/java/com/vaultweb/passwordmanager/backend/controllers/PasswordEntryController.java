@@ -21,6 +21,7 @@ public class PasswordEntryController {
     public ResponseEntity<PasswordEntry> create(@Valid @RequestBody PasswordEntry entry) {
         PasswordEntry created = service.create(entry);
         return ResponseEntity.created(URI.create("/api/passwords/" + created.getId())).body(created);
+    }
 
     @GetMapping
     public ResponseEntity<List<PasswordEntry>> getAll() {
