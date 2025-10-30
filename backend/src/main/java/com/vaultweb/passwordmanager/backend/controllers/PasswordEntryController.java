@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -16,7 +17,7 @@ public class PasswordEntryController {
     private final PasswordEntryService service;
 
     @PostMapping
-    public ResponseEntity<PasswordEntry> create(@RequestBody PasswordEntry entry) {
+    public ResponseEntity<PasswordEntry> create(@Valid @RequestBody PasswordEntry entry) {
         return ResponseEntity.ok(service.create(entry));
     }
 
@@ -33,7 +34,7 @@ public class PasswordEntryController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PasswordEntry> update(@PathVariable Long id, @RequestBody PasswordEntry updated) {
+    public ResponseEntity<PasswordEntry> update(@PathVariable Long id, @Valid @RequestBody PasswordEntry updated) {
         return ResponseEntity.ok(service.update(id, updated));
     }
 
