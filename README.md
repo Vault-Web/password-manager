@@ -38,13 +38,19 @@ git clone https://github.com/Vault-Web/password-manager.git
 cd password-manager
 ```
 
-### 2. Configure .env 
+### 2. Configure Environment Variables
 
-Create a .env file in the root directory with:
+For production deployments, set the following environment variables:
 ```bash
-# JWT config
-MASTER_KEY=your_master_key_here
+# JWT Secret Key (required in production)
+export JWT_SECRET=your_jwt_secret_key_here
+
+# Encryption Secret Key (required in production)
+export ENCRYPTION_SECRET=your_encryption_secret_here
 ```
+
+> ⚠️ **Security Note**: The application.properties file contains default values for local development only. **Never use these default values in production.** Always set JWT_SECRET and ENCRYPTION_SECRET environment variables with secure, randomly generated values in production environments.
+
 > ⚠️ **Make sure PostgreSQL from the Vault Web Docker setup is running** before starting Cloud Page. Run `docker compose up -d` in the Vault Web repository if not already running. The database credentials are inherited from the Vault Web `.env` setup. Do **not** use production secrets during local development.
 
 ### 3. Start the backend
