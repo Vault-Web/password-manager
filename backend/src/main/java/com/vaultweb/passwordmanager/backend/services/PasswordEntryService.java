@@ -42,10 +42,9 @@ public class PasswordEntryService {
     }
 
     public void delete(Long id) {
-        if (!repository.existsById(id)) {
-            throw new IllegalArgumentException("Password entry not found with id " + id);
-        }
-        repository.deleteById(id);
+        PasswordEntry entry = repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Password entry not found with id " + id));
+        repository.delete(entry);
     }
 }
 
