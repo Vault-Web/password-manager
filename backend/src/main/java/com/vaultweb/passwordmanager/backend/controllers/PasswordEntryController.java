@@ -2,27 +2,25 @@ package com.vaultweb.passwordmanager.backend.controllers;
 
 import com.vaultweb.passwordmanager.backend.model.PasswordEntry;
 import com.vaultweb.passwordmanager.backend.services.PasswordEntryService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/passwords")
+@RequiredArgsConstructor
 public class PasswordEntryController {
 
     private final PasswordEntryService service;
 
-    public PasswordEntryController(PasswordEntryService service) {
-        this.service = service;
-    }
-
     @PostMapping
-    public ResponseEntity<PasswordEntry> create(@RequestBody PasswordEntry entry) {
+    public ResponseEntity<PasswordEntry> create(@Valid @RequestBody PasswordEntry entry) {
         PasswordEntry created = service.create(entry);
         return ResponseEntity.created(URI.create("/api/passwords/" + created.getId())).body(created);
-    }
 
     @GetMapping
     public ResponseEntity<List<PasswordEntry>> getAll() {
@@ -37,7 +35,7 @@ public class PasswordEntryController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PasswordEntry> update(@PathVariable Long id, @RequestBody PasswordEntry updated) {
+    public ResponseEntity<PasswordEntry> update(@PathVariable Long id, @Valid @RequestBody PasswordEntry updated) {
         return ResponseEntity.ok(service.update(id, updated));
     }
 

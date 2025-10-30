@@ -2,19 +2,17 @@ package com.vaultweb.passwordmanager.backend.services;
 
 import com.vaultweb.passwordmanager.backend.model.PasswordEntry;
 import com.vaultweb.passwordmanager.backend.repositories.PasswordEntryRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class PasswordEntryService {
 
     private final PasswordEntryRepository repository;
-
-    public PasswordEntryService(PasswordEntryRepository repository) {
-        this.repository = repository;
-    }
 
     public PasswordEntry create(PasswordEntry entry) {
         return repository.save(entry);
