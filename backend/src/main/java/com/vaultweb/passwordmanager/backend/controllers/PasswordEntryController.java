@@ -5,6 +5,7 @@ import com.vaultweb.passwordmanager.backend.services.PasswordEntryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -19,7 +20,8 @@ public class PasswordEntryController {
 
     @PostMapping
     public ResponseEntity<PasswordEntry> create(@RequestBody PasswordEntry entry) {
-        return ResponseEntity.ok(service.create(entry));
+        PasswordEntry created = service.create(entry);
+        return ResponseEntity.created(URI.create("/api/passwords/" + created.getId())).body(created);
     }
 
     @GetMapping
