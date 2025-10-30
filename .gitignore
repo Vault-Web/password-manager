@@ -80,3 +80,7 @@ build/
 
 # JetBrains IDE specific
 
+
+# JDK downloads
+backend/jdk-*/
+backend/*.tar.gz
