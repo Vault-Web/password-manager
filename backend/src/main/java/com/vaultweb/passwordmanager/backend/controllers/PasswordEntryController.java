@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -19,7 +19,8 @@ public class PasswordEntryController {
 
     @PostMapping
     public ResponseEntity<PasswordEntry> create(@Valid @RequestBody PasswordEntry entry) {
-        return ResponseEntity.ok(service.create(entry));
+        PasswordEntry created = service.create(entry);
+        return ResponseEntity.created(URI.create("/api/passwords/" + created.getId())).body(created);
     }
 
     @GetMapping
