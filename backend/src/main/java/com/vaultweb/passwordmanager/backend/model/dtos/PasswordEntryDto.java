@@ -1,7 +1,5 @@
 package com.vaultweb.passwordmanager.backend.model.dtos;
 
-import com.vaultweb.passwordmanager.backend.security.AttributeEncryptor;
-import jakarta.persistence.Convert;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -23,7 +21,6 @@ public class PasswordEntryDto {
     private String username;
 
     @NotBlank(message = "Password is required")
-    @Convert(converter = AttributeEncryptor.class)
     private String password;
 
     private String url;

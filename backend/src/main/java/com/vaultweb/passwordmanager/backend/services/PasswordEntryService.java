@@ -1,5 +1,6 @@
 package com.vaultweb.passwordmanager.backend.services;
 
+import com.vaultweb.passwordmanager.backend.exceptions.NotFoundException;
 import com.vaultweb.passwordmanager.backend.model.PasswordEntry;
 import com.vaultweb.passwordmanager.backend.repositories.PasswordEntryRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,7 @@ public class PasswordEntryService {
 
     public PasswordEntry update(Long id, PasswordEntry updated) {
         PasswordEntry existing = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Password entry not found with id " + id));
+                .orElseThrow(() -> new NotFoundException("Password entry not found with id " + id));
 
         existing.setName(updated.getName());
         existing.setUsername(updated.getUsername());
@@ -41,7 +42,7 @@ public class PasswordEntryService {
 
     public void delete(Long id) {
         PasswordEntry entry = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Password entry not found with id " + id));
+                .orElseThrow(() -> new NotFoundException("Password entry not found with id " + id));
         repository.delete(entry);
     }
 }
