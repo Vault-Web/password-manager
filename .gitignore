@@ -62,6 +62,7 @@ ehthumbs.db
 application.yml
 application-dev.yml
 application-prod.yml
+application.properties
 
 # Temporary files
 *.tmp
@@ -78,3 +79,4 @@ docker-compose.override.yml
 build/
 
 # JetBrains IDE specific
+
