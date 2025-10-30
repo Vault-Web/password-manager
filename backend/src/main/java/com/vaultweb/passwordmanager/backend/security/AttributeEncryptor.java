@@ -79,6 +79,11 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
             // Decode the Base64 data
             byte[] decodedData = Base64.getDecoder().decode(dbData);
             
+            // Validate minimum data length
+            if (decodedData.length < GCM_IV_LENGTH) {
+                throw new IllegalArgumentException("Invalid encrypted data length");
+            }
+            
             // Extract IV and encrypted data
             ByteBuffer byteBuffer = ByteBuffer.wrap(decodedData);
             byte[] iv = new byte[GCM_IV_LENGTH];
