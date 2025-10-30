@@ -22,6 +22,7 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
 
     private static final int GCM_IV_LENGTH = 12; // 96 bits
     private static final int GCM_TAG_LENGTH = 128; // 128 bits
+    private static final int GCM_TAG_LENGTH_BYTES = GCM_TAG_LENGTH / 8; // 16 bytes
     
     @Value("${encryption.secret}")
     private String secretKey;
@@ -79,8 +80,8 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
             // Decode the Base64 data
             byte[] decodedData = Base64.getDecoder().decode(dbData);
             
-            // Validate minimum data length
-            if (decodedData.length < GCM_IV_LENGTH) {
+            // Validate minimum data length (IV + authentication tag)
+            if (decodedData.length < GCM_IV_LENGTH + GCM_TAG_LENGTH_BYTES) {
                 throw new IllegalArgumentException("Invalid encrypted data length");
             }
             
