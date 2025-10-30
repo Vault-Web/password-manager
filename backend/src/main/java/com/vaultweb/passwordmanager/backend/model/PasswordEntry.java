@@ -2,6 +2,7 @@ package com.vaultweb.passwordmanager.backend.model;
 
 import java.time.LocalDateTime;
 
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -21,6 +22,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "password_entries")
 public class PasswordEntry {
