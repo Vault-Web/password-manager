@@ -19,10 +19,20 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
     @Value("${encryption.secret}")
     private String secretKey;
 
+    private byte[] keyBytes;
+
     @PostConstruct
     private void validateKey() {
-        if (secretKey == null || !(secretKey.length() == 16 || secretKey.length() == 24 || secretKey.length() == 32)) {
-            throw new IllegalArgumentException("Encryption key must be 16, 24, or 32 characters long");
+        if (secretKey == null) {
+            throw new IllegalArgumentException("Encryption key cannot be null");
+        }
+        try {
+            keyBytes = Base64.getDecoder().decode(secretKey);
+            if (!(keyBytes.length == 16 || keyBytes.length == 24 || keyBytes.length == 32)) {
+                throw new IllegalArgumentException("Encryption key must be 16, 24, or 32 bytes long");
+            }
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Encryption key must be a valid Base64-encoded string", e);
         }
     }
 
@@ -32,7 +42,7 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
             if (attribute == null) return null;
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.ENCRYPT_MODE,
-                new SecretKeySpec(secretKey.getBytes(), "AES"));
+                new SecretKeySpec(keyBytes, "AES"));
             return Base64.getEncoder().encodeToString(cipher.doFinal(attribute.getBytes()));
         } catch (Exception e) {
             throw new RuntimeException("Error encrypting", e);
@@ -45,7 +55,7 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
             if (dbData == null) return null;
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE,
-                new SecretKeySpec(secretKey.getBytes(), "AES"));
+                new SecretKeySpec(keyBytes, "AES"));
             return new String(cipher.doFinal(Base64.getDecoder().decode(dbData)));
         } catch (Exception e) {
             throw new RuntimeException("Error decrypting", e);
