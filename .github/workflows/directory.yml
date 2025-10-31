@@ -25,10 +25,10 @@ jobs:
 
       - name: Commit and push changes
         run: |
-          git config --global user.name "$GITHUB_ACTOR"
-          git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          git config --global user.name "DenizAltunkapan"
+          git config --global user.email "deniz.altunkapan@outlook.com"
           git add DIRECTORY.md
           git diff --cached --quiet || git commit -m "Update DIRECTORY.md"
-          git push origin main
+          git push https://x-access-token:${{ secrets.Directory_Token }}@github.com/Vault-Web/password-manager.git main
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.Directory_Token }}
