@@ -28,7 +28,14 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
     private String secretKey;
 
     private byte[] keyBytes;
-    private final SecureRandom secureRandom = new SecureRandom();
+    private SecureRandom secureRandom;
+
+    private SecureRandom getSecureRandom() {
+        if (secureRandom == null) {
+            secureRandom = new SecureRandom();
+        }
+        return secureRandom;
+    }
 
     @PostConstruct
     private void validateKey() {
@@ -53,7 +60,7 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
 
         try {
             byte[] iv = new byte[GCM_IV_LENGTH];
-            secureRandom.nextBytes(iv);
+            getSecureRandom().nextBytes(iv);
 
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
             GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
@@ -79,7 +86,8 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
             byte[] decoded = Base64.getDecoder().decode(dbData);
 
             if (decoded.length < GCM_IV_LENGTH + GCM_TAG_LENGTH_BYTES) {
-                throw new IllegalArgumentException("Invalid encrypted data length");
+                throw new IllegalArgumentException("Invalid encrypted data length: expected at least "
+                        + (GCM_IV_LENGTH + GCM_TAG_LENGTH_BYTES) + " bytes, got " + decoded.length + " bytes");
             }
 
             ByteBuffer buffer = ByteBuffer.wrap(decoded);

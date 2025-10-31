@@ -1,5 +1,6 @@
 package com.vaultweb.passwordmanager.backend.model.dtos;
 
+import com.vaultweb.passwordmanager.backend.model.PasswordEntry;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -27,4 +28,13 @@ public class PasswordEntryDto {
 
     @Size(max = 500)
     private String notes;
+
+    public PasswordEntryDto(PasswordEntry entry) {
+        this.id = entry.getId();
+        this.name = entry.getName();
+        this.username = entry.getUsername();
+        this.password = entry.getPassword();
+        this.url = entry.getUrl();
+        this.notes = entry.getNotes();
+    }
 }

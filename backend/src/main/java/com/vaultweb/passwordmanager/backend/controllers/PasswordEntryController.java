@@ -20,16 +20,16 @@ public class PasswordEntryController {
 
     @PostMapping
     public ResponseEntity<PasswordEntryDto> create(@Valid @RequestBody PasswordEntryDto dto) {
-        PasswordEntry created = service.create(fromDto(dto));
+        PasswordEntry created = service.create(new PasswordEntry(dto));
         return ResponseEntity
                 .created(URI.create("/api/passwords/" + created.getId()))
-                .body(toDto(created));
+                .body(new PasswordEntryDto(created));
     }
 
     @GetMapping
     public ResponseEntity<List<PasswordEntryDto>> getAll() {
         List<PasswordEntryDto> dtos = service.getAll().stream()
-                .map(this::toDto)
+                .map(PasswordEntryDto::new)
                 .toList();
         return ResponseEntity.ok(dtos);
     }
@@ -37,40 +37,19 @@ public class PasswordEntryController {
     @GetMapping("/{id}")
     public ResponseEntity<PasswordEntryDto> getById(@PathVariable Long id) {
         return service.getById(id)
-                .map(entry -> ResponseEntity.ok(toDto(entry)))
+                .map(entry -> ResponseEntity.ok(new PasswordEntryDto(entry)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<PasswordEntryDto> update(@PathVariable Long id, @Valid @RequestBody PasswordEntryDto dto) {
-        PasswordEntry updated = service.update(id, fromDto(dto));
-        return ResponseEntity.ok(toDto(updated));
+        PasswordEntry updated = service.update(id, new PasswordEntry(dto));
+        return ResponseEntity.ok(new PasswordEntryDto(updated));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
-    }
-
-    private PasswordEntryDto toDto(PasswordEntry entry) {
-        return new PasswordEntryDto(
-                entry.getId(),
-                entry.getName(),
-                entry.getUsername(),
-                entry.getPassword(),
-                entry.getUrl(),
-                entry.getNotes()
-        );
-    }
-
-    private PasswordEntry fromDto(PasswordEntryDto dto) {
-        PasswordEntry entry = new PasswordEntry();
-        entry.setName(dto.getName());
-        entry.setUsername(dto.getUsername());
-        entry.setPassword(dto.getPassword());
-        entry.setUrl(dto.getUrl());
-        entry.setNotes(dto.getNotes());
-        return entry;
     }
 }
