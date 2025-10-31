@@ -13,9 +13,13 @@ jobs:
   generate-directory:
     runs-on: ubuntu-latest
     steps:
+      # Checkout repository and fetch all branches
       - name: Checkout Repository
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # ensure all branches are fetched
 
+      # Run the directory tree generator
       - name: Run Directory Tree Generator
         uses: DenizAltunkapan/directory-tree-generator@v2
         with:
@@ -23,12 +27,26 @@ jobs:
           extensions: ".java,.html,.ts,.scss"
           show-extensions: true
 
+      # Commit changes and push to a separate branch
       - name: Commit and push changes
         run: |
-          git config --global user.name "DenizAltunkapan"
-          git config --global user.email "deniz.altunkapan@outlook.com"
+          # Configure Git user for commits (GitHub Actions bot)
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Update local main branch before creating the directory branch
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
+
+          # Create or reset the directory branch
+          git checkout -B directory
+
+          # Stage and commit changes if any
           git add DIRECTORY.md
           git diff --cached --quiet || git commit -m "Update DIRECTORY.md"
-          git push https://x-access-token:${{ secrets.Directory_Token }}@github.com/Vault-Web/password-manager.git main
+
+          # Push to the directory branch
+          git push origin directory
         env:
-          GITHUB_TOKEN: ${{ secrets.Directory_Token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
