@@ -41,7 +41,7 @@ public class PasswordEntry {
 
     @NotBlank(message = "Password is required")
     @Convert(converter = AttributeEncryptor.class)
-    private String password; // will be stored in encrypted form
+    private String password;
 
     private String url;
 
