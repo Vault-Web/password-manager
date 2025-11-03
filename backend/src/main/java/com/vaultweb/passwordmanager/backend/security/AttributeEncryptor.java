@@ -20,8 +20,8 @@ import jakarta.persistence.Converter;
 @Converter
 public class AttributeEncryptor implements AttributeConverter<String, String> {
 
-    private static final int GCM_IV_LENGTH = 12;  // 96 bits
-    private static final int GCM_TAG_LENGTH = 128; // 128 bits (in bits)
+    private static final int GCM_IV_LENGTH = 12;
+    private static final int GCM_TAG_LENGTH = 128;
     private static final int GCM_TAG_LENGTH_BYTES = GCM_TAG_LENGTH / 8;
 
     @Value("${encryption.secret}")
@@ -37,6 +37,16 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
         return secureRandom;
     }
 
+    /**
+     * Validates the encryption key for use in cryptographic operations.
+     *
+     * This method ensures that the key used for encryption and decryption is not null,
+     * is properly Base64-encoded, and corresponds to a valid length (16, 24, or 32 bytes)
+     * for AES encryption standards. The method is annotated with {@code @PostConstruct}
+     * to ensure it is invoked after dependency injection but before the object is used.
+     *
+     * @throws IllegalArgumentException if the secret key is invalid
+     */
     @PostConstruct
     private void validateKey() {
         if (secretKey == null) {
@@ -54,6 +64,15 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
         }
     }
 
+    /**
+     * Converts the given attribute into its encrypted database column representation.
+     * The method uses AES encryption in GCM mode with a randomly generated initialization vector (IV).
+     * The resulting encrypted data is encoded into a Base64 string for storage.
+     *
+     * @param attribute the plain text attribute to be encrypted. If null, the method will return null.
+     * @return the encrypted and Base64-encoded string representation of the attribute for database storage.
+     * @throws RuntimeException if an error occurs during the encryption process.
+     */
     @Override
     public String convertToDatabaseColumn(String attribute) {
         if (attribute == null) return null;
@@ -78,6 +97,15 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
         }
     }
 
+    /**
+     * Converts the encrypted database column value back into its original attribute representation.
+     * This method decrypts the Base64-encoded database data using AES encryption in GCM mode.
+     * If the provided database value is null, it will return null.
+     *
+     * @param dbData the Base64-encoded and encrypted database column value to be decrypted. If null, the method will return null.
+     * @return the decrypted original string representation of the attribute, or null if the input is null.
+     * @throws RuntimeException if an error occurs during the decryption process, such as an invalid key or corrupted data.
+     */
     @Override
     public String convertToEntityAttribute(String dbData) {
         if (dbData == null) return null;

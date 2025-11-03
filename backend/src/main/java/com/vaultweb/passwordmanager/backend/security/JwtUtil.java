@@ -50,6 +50,13 @@ public class JwtUtil {
         return extractClaim(token, claims -> claims.get("userId", Long.class));
     }
 
+    /**
+     * Extracts a specific claim from a JWT token by applying the provided claims resolver function.
+     *
+     * @param token the JWT string from which the claim is to be extracted
+     * @param claimsResolver a function that specifies how to extract the desired claim from the parsed Claims object
+     * @return the value of the claim extracted by the claims resolver function
+     */
     public <T> T extractClaim(String token, java.util.function.Function<Claims, T> claimsResolver) {
         final Claims claims = Jwts.parser()
                 .setSigningKey(SECRET_KEY)
@@ -58,6 +65,12 @@ public class JwtUtil {
         return claimsResolver.apply(claims);
     }
 
+    /**
+     * Validates the given JSON Web Token (JWT) to ensure it is well-formed and has not been tampered with.
+     *
+     * @param token the JWT string to validate
+     * @return true if the token is valid and its integrity is intact; false if the token is invalid or cannot be parsed
+     */
     public boolean validateToken(String token) {
         try {
             Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token);
