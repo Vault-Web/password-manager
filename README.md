@@ -70,7 +70,7 @@ The backend runs on port 8091 (can be changed in application.properties). Make s
 ./mvnw spring-boot:run
 ```
 
-###💡 IntelliJ / IDE Note:
+### IntelliJ / IDE Note:
 If you start the application directly via your IDE (e.g., IntelliJ IDEA), you must add the ENCRYPTION_SECRET key in the Run/Debug Configurations under the Environment Variables section, as the IDE does not automatically use shell variables.
 
 Then visit:
