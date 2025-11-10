@@ -12,10 +12,25 @@
               - 📄 [BackendApplication.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/BackendApplication.java)
               - 📁 **config**
                 - 📄 [OpenApiConfig.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/config/OpenApiConfig.java)
+              - 📁 **controllers**
+                - 📄 [PasswordEntryController.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/controllers/PasswordEntryController.java)
+              - 📁 **exceptions**
+                - 📄 [GlobalExceptionHandler.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/exceptions/GlobalExceptionHandler.java)
+                - 📄 [NotFoundException.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/exceptions/NotFoundException.java)
+              - 📁 **model**
+                - 📄 [PasswordEntry.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/model/PasswordEntry.java)
+                - 📁 **dtos**
+                  - 📄 [PasswordEntryDto.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/model/dtos/PasswordEntryDto.java)
+              - 📁 **repositories**
+                - 📄 [PasswordEntryRepository.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/repositories/PasswordEntryRepository.java)
               - 📁 **security**
+                - 📄 [AttributeEncryptor.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/security/AttributeEncryptor.java)
                 - 📄 [JwtAuthFilter.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/security/JwtAuthFilter.java)
                 - 📄 [JwtUtil.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/security/JwtUtil.java)
                 - 📄 [SecurityConfig.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/security/SecurityConfig.java)
+              - 📁 **services**
+                - 📄 [EncryptionService.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/services/EncryptionService.java)
+                - 📄 [PasswordEntryService.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/services/PasswordEntryService.java)
   - 📁 **test**
     - 📁 **java**
       - 📁 **com**
