@@ -12,29 +12,29 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PasswordEntryDto {
 
-    private Long id;
+  private Long id;
 
-    @NotBlank(message = "Name (service/site) is required")
-    @Size(max = 100)
-    private String name;
+  @NotBlank(message = "Name (service/site) is required")
+  @Size(max = 100)
+  private String name;
 
-    @NotBlank(message = "Username is required")
-    private String username;
+  @NotBlank(message = "Username is required")
+  private String username;
 
-    @NotBlank(message = "Password is required")
-    private String password;
+  @NotBlank(message = "Password is required")
+  private String password;
 
-    private String url;
+  private String url;
 
-    @Size(max = 500)
-    private String notes;
+  @Size(max = 500)
+  private String notes;
 
-    public PasswordEntryDto(PasswordEntry entry) {
-        this.id = entry.getId();
-        this.name = entry.getName();
-        this.username = entry.getUsername();
-        this.password = entry.getPassword();
-        this.url = entry.getUrl();
-        this.notes = entry.getNotes();
-    }
+  public PasswordEntryDto(PasswordEntry entry) {
+    this.id = entry.getId();
+    this.name = entry.getName();
+    this.username = entry.getUsername();
+    this.password = entry.getPassword();
+    this.url = entry.getUrl();
+    this.notes = entry.getNotes();
+  }
 }
