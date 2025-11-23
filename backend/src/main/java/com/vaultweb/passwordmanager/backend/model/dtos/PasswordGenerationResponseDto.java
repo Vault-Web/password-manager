@@ -5,7 +5,7 @@ import lombok.Data;
 
 /**
  * @author rashmi.soni
- **/
+ */
 @Data
 @AllArgsConstructor
 public class PasswordGenerationResponseDto {

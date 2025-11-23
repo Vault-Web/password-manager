@@ -5,7 +5,7 @@ import lombok.Getter;
 
 /**
  * @author rashmi.soni
- **/
+ */
 @Data
 @Getter
 public class PasswordGenerationRequestDto {

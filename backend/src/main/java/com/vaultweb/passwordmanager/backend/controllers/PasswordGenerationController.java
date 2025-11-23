@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * @author rashmi.soni
- **/
+ */
 @RestController
 @RequestMapping("/api/passwords")
 public class PasswordGenerationController {

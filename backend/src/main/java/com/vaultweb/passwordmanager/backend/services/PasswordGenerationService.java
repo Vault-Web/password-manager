@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * @author rashmi.soni
- **/
+ */
 @Service
 public class PasswordGenerationService {
   private static final SecureRandom RANDOM = new SecureRandom();
