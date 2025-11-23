@@ -18,7 +18,7 @@ public class PasswordGenerationService {
   private static final String SPECIAL = "!@#$%&*()-_=+[]{};:,.<>?";
 
   private static final int DEFAULT_LENGTH = 16;
-  private static final int MIN_LENGTH = 8;
+  private static final int MIN_LENGTH = 6;
   private static final int MAX_LENGTH = 128;
 
   public String generate(
