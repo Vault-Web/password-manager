@@ -28,7 +28,7 @@ public class EncryptionService {
    *     length of 16, 24, or 32. If the key is null, blank, not Base64-encoded, or of an invalid
    *     length, an IllegalArgumentException is thrown.
    */
-  public EncryptionService(@Value("${encryption.secret") String base64Key) {
+  public EncryptionService(@Value("${encryption.secret}") String base64Key) {
     if (base64Key == null || base64Key.isBlank()) {
       throw new IllegalArgumentException("Encryption key cannot be null or blank");
     }
