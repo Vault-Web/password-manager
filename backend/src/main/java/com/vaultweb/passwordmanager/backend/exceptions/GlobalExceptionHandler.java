@@ -52,4 +52,10 @@ public class GlobalExceptionHandler {
   public ResponseEntity<Map<String, Object>> handleGeneralErrors(Exception ex) {
     return buildErrorResponse("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
   }
+
+  @ExceptionHandler(PasswordBreachCheckException.class)
+  public ResponseEntity<Map<String, Object>> handlePasswordBreachCheckError(
+      PasswordBreachCheckException ex) {
+    return buildErrorResponse(ex.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
+  }
 }
