@@ -2,6 +2,9 @@ package com.vaultweb.passwordmanager.backend.services;
 
 import org.springframework.stereotype.Service;
 
+/**
+ * @author rashmi.soni
+ */
 @Service
 public class PasswordStrengthService {
 

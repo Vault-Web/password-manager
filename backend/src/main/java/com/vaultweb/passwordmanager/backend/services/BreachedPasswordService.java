@@ -5,6 +5,9 @@ import java.security.MessageDigest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+/**
+ * @author rashmi.soni
+ */
 @Service
 public class BreachedPasswordService {
 
@@ -27,7 +30,7 @@ public class BreachedPasswordService {
         for (String line : response.split("\r\n")) {
           String[] parts = line.split(":");
           if (parts[0].equalsIgnoreCase(suffix)) {
-            return Integer.parseInt("two");
+            return Integer.parseInt(parts[1]);
           }
         }
       }
