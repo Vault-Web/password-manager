@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -52,6 +53,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
+    if (HttpMethod.OPTIONS.matches(request.getMethod())) {
+      response.setStatus(HttpServletResponse.SC_OK);
+      return;
+    }
+
     String path = request.getServletPath();
     if (path.startsWith("/api/auth/")
         || path.startsWith("/v3/api-docs")
@@ -65,9 +71,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       String jwt = authHeader.substring(7);
       if (jwtUtil.validateToken(jwt)) {
         String username = jwtUtil.extractUsername(jwt);
+        Long userId = jwtUtil.extractUserId(jwt);
+        if (userId == null) {
+          response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing user context in token");
+          return;
+        }
+
+        AuthenticatedUser principal = new AuthenticatedUser(userId, username);
         UsernamePasswordAuthenticationToken authToken =
             new UsernamePasswordAuthenticationToken(
-                username, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+                principal,
+                null,
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
         SecurityContextHolder.getContext().setAuthentication(authToken);
       } else {
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");

@@ -29,6 +29,8 @@ public class PasswordEntryDto {
   @Size(max = 500)
   private String notes;
 
+  private Long categoryId;
+
   public PasswordEntryDto(PasswordEntry entry) {
     this.id = entry.getId();
     this.name = entry.getName();
@@ -36,5 +38,7 @@ public class PasswordEntryDto {
     this.password = entry.getPassword();
     this.url = entry.getUrl();
     this.notes = entry.getNotes();
+    this.categoryId =
+        entry.getCategory() != null ? entry.getCategory().getId() : null;
   }
 }

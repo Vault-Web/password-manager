@@ -11,6 +11,7 @@ This service is designed to integrate seamlessly with Vault Web, **sharing its P
 
 - 🔹 CRUD operations for passwords and categories  
 - 🔹 Secure storage of encrypted passwords  
+- 🔹 Tenant-aware storage keyed to the authenticated Vault Web user  
 - 🔹 Access via JWT authentication using Vault Web's master key  
 - 🔹 REST API for integration with web or mobile apps  
 

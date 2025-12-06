@@ -1,7 +1,9 @@
 package com.vaultweb.passwordmanager.backend.services;
 
 import com.vaultweb.passwordmanager.backend.exceptions.NotFoundException;
+import com.vaultweb.passwordmanager.backend.model.Category;
 import com.vaultweb.passwordmanager.backend.model.PasswordEntry;
+import com.vaultweb.passwordmanager.backend.repositories.CategoryRepository;
 import com.vaultweb.passwordmanager.backend.repositories.PasswordEntryRepository;
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 public class PasswordEntryService {
 
   private final PasswordEntryRepository repository;
+  private final CategoryRepository categoryRepository;
 
   /**
    * Creates a new PasswordEntry by saving it to the database.
@@ -20,7 +23,9 @@ public class PasswordEntryService {
    * @param entry the PasswordEntry object to be created and saved
    * @return the saved PasswordEntry object
    */
-  public PasswordEntry create(PasswordEntry entry) {
+  public PasswordEntry create(PasswordEntry entry, Long ownerId, Long categoryId) {
+    entry.setOwnerId(ownerId);
+    entry.setCategory(resolveCategory(categoryId, ownerId));
     return repository.save(entry);
   }
 
@@ -29,8 +34,8 @@ public class PasswordEntryService {
    *
    * @return a list of all PasswordEntry entities
    */
-  public List<PasswordEntry> getAll() {
-    return repository.findAll();
+  public List<PasswordEntry> getAll(Long ownerId) {
+    return repository.findAllByOwnerId(ownerId);
   }
 
   /**
@@ -39,8 +44,8 @@ public class PasswordEntryService {
    * @param id the unique identifier of the PasswordEntry to retrieve
    * @return an Optional containing the PasswordEntry if found, or an empty Optional if not found
    */
-  public Optional<PasswordEntry> getById(Long id) {
-    return repository.findById(id);
+  public Optional<PasswordEntry> getById(Long id, Long ownerId) {
+    return repository.findByIdAndOwnerId(id, ownerId);
   }
 
   /**
@@ -51,10 +56,10 @@ public class PasswordEntryService {
    * @param updated the PasswordEntry object containing the updated values
    * @return the updated PasswordEntry after saving the changes
    */
-  public PasswordEntry update(Long id, PasswordEntry updated) {
+  public PasswordEntry update(Long id, PasswordEntry updated, Long ownerId, Long categoryId) {
     PasswordEntry existing =
         repository
-            .findById(id)
+            .findByIdAndOwnerId(id, ownerId)
             .orElseThrow(() -> new NotFoundException("Password entry not found with id " + id));
 
     existing.setName(updated.getName());
@@ -62,6 +67,7 @@ public class PasswordEntryService {
     existing.setPassword(updated.getPassword());
     existing.setUrl(updated.getUrl());
     existing.setNotes(updated.getNotes());
+    existing.setCategory(resolveCategory(categoryId, ownerId));
 
     return repository.save(existing);
   }
@@ -72,11 +78,20 @@ public class PasswordEntryService {
    *
    * @param id the ID of the PasswordEntry to be deleted
    */
-  public void delete(Long id) {
+  public void delete(Long id, Long ownerId) {
     PasswordEntry entry =
         repository
-            .findById(id)
+            .findByIdAndOwnerId(id, ownerId)
             .orElseThrow(() -> new NotFoundException("Password entry not found with id " + id));
     repository.delete(entry);
+  }
+
+  private Category resolveCategory(Long categoryId, Long ownerId) {
+    if (categoryId == null) {
+      return null;
+    }
+    return categoryRepository
+        .findByIdAndOwnerId(categoryId, ownerId)
+        .orElseThrow(() -> new NotFoundException("Category not found with id " + categoryId));
   }
 }
