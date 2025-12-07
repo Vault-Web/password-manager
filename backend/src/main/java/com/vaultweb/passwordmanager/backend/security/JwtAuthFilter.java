@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -22,6 +24,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
  */
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(JwtAuthFilter.class);
 
   private final JwtUtil jwtUtil;
 
@@ -61,7 +65,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     String path = request.getServletPath();
     if (path.startsWith("/api/auth/")
         || path.startsWith("/v3/api-docs")
-        || path.startsWith("/swagger-ui")) {
+        || path.startsWith("/swagger-ui")
+        || path.equals("/swagger-ui.html")
+        || path.startsWith("/swagger-resources")
+        || path.startsWith("/webjars")) {
       filterChain.doFilter(request, response);
       return;
     }
@@ -73,8 +80,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String username = jwtUtil.extractUsername(jwt);
         Long userId = jwtUtil.extractUserId(jwt);
         if (userId == null) {
-          response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing user context in token");
-          return;
+          userId = fallbackUserId(username);
+          if (userId == null) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing user context in token");
+            return;
+          }
+            LOGGER.debug(
+              "Token missing userId claim, derived fallback owner for subject {}", username);
         }
 
         AuthenticatedUser principal = new AuthenticatedUser(userId, username);
@@ -94,5 +106,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     filterChain.doFilter(request, response);
+  }
+
+  private Long fallbackUserId(String username) {
+    if (username == null || username.isBlank()) {
+      return null;
+    }
+    return (long) Math.abs(username.hashCode());
   }
 }
