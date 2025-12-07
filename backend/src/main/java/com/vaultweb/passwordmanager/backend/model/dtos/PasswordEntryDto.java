@@ -38,7 +38,6 @@ public class PasswordEntryDto {
     this.password = entry.getPassword();
     this.url = entry.getUrl();
     this.notes = entry.getNotes();
-    this.categoryId =
-        entry.getCategory() != null ? entry.getCategory().getId() : null;
+    this.categoryId = entry.getCategory() != null ? entry.getCategory().getId() : null;
   }
 }

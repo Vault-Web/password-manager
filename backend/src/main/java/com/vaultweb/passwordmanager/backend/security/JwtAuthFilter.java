@@ -82,10 +82,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (userId == null) {
           userId = fallbackUserId(username);
           if (userId == null) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing user context in token");
+            response.sendError(
+                HttpServletResponse.SC_UNAUTHORIZED, "Missing user context in token");
             return;
           }
-            LOGGER.debug(
+          LOGGER.debug(
               "Token missing userId claim, derived fallback owner for subject {}", username);
         }
 

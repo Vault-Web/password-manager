@@ -27,15 +27,13 @@ public class CategoryController {
 
   @PostMapping
   public ResponseEntity<CategoryDto> create(
-      @AuthenticationPrincipal AuthenticatedUser user,
-      @Valid @RequestBody CategoryDto dto) {
+      @AuthenticationPrincipal AuthenticatedUser user, @Valid @RequestBody CategoryDto dto) {
     CategoryDto created = service.create(dto, user.userId());
     return ResponseEntity.created(URI.create("/api/categories/" + created.getId())).body(created);
   }
 
   @GetMapping
-  public ResponseEntity<List<CategoryDto>> getAll(
-      @AuthenticationPrincipal AuthenticatedUser user) {
+  public ResponseEntity<List<CategoryDto>> getAll(@AuthenticationPrincipal AuthenticatedUser user) {
     return ResponseEntity.ok(service.getAll(user.userId()));
   }
 
