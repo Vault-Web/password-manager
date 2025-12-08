@@ -57,7 +57,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
-    if (HttpMethod.OPTIONS.matches(request.getMethod())) {
+    if (isCorsPreflightRequest(request)) {
       response.setStatus(HttpServletResponse.SC_OK);
       filterChain.doFilter(request, response);
       return;
@@ -75,45 +75,37 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     final String authHeader = request.getHeader("Authorization");
-    if (authHeader != null && authHeader.startsWith("Bearer ")) {
-      String jwt = authHeader.substring(7);
-      if (jwtUtil.validateToken(jwt)) {
-        String username = jwtUtil.extractUsername(jwt);
-        Long userId = jwtUtil.extractUserId(jwt);
-        if (userId == null) {
-          userId = fallbackUserId(username);
-          if (userId == null) {
-            response.sendError(
-                HttpServletResponse.SC_UNAUTHORIZED, "Missing user context in token");
-            return;
-          }
-          LOGGER.debug(
-              "Token missing userId claim, derived fallback owner for subject {}", username);
-        }
-
-        AuthenticatedUser principal = new AuthenticatedUser(userId, username);
-        UsernamePasswordAuthenticationToken authToken =
-            new UsernamePasswordAuthenticationToken(
-                principal,
-                null,
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-      } else {
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
-        return;
-      }
-    } else {
+    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
       response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing Authorization header");
       return;
     }
 
+    String jwt = authHeader.substring(7);
+    if (!jwtUtil.validateToken(jwt)) {
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
+      return;
+    }
+
+    String username = jwtUtil.extractUsername(jwt);
+    Long userId = jwtUtil.extractUserId(jwt);
+    if (userId == null) {
+      LOGGER.warn("Token for subject {} does not contain required userId claim", username);
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing userId claim in token");
+      return;
+    }
+
+    AuthenticatedUser principal = new AuthenticatedUser(userId, username);
+    UsernamePasswordAuthenticationToken authToken =
+        new UsernamePasswordAuthenticationToken(
+            principal, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+    SecurityContextHolder.getContext().setAuthentication(authToken);
+
     filterChain.doFilter(request, response);
   }
 
-  private Long fallbackUserId(String username) {
-    if (username == null || username.isBlank()) {
-      return null;
-    }
-    return (long) Math.abs(username.hashCode());
+  private boolean isCorsPreflightRequest(HttpServletRequest request) {
+    return HttpMethod.OPTIONS.matches(request.getMethod())
+        && request.getHeader("Origin") != null
+        && request.getHeader("Access-Control-Request-Method") != null;
   }
 }
