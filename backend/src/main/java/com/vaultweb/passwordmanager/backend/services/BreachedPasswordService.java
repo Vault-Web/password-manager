@@ -1,7 +1,6 @@
 package com.vaultweb.passwordmanager.backend.services;
 
 import com.vaultweb.passwordmanager.backend.exceptions.PasswordBreachCheckException;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import org.springframework.stereotype.Service;
