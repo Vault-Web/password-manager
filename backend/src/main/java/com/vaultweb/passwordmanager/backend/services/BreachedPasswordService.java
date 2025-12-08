@@ -11,7 +11,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Service
 public class BreachedPasswordService {
 
-  private final WebClient webClient = WebClient.create("https://api.pwnedpasswords.com/range/");
+  private final WebClient webClient;
+
+  public BreachedPasswordService(WebClient webClient) {
+    this.webClient = webClient;
+  }
 
   public int checkIfBreached(String password) {
     try {
@@ -27,7 +31,7 @@ public class BreachedPasswordService {
       String response = webClient.get().uri(prefix).retrieve().bodyToMono(String.class).block();
 
       if (response != null) {
-        for (String line : response.split("\r\n")) {
+        for (String line : response.split("\\R")) {
           String[] parts = line.split(":");
           if (parts[0].equalsIgnoreCase(suffix)) {
             return Integer.parseInt(parts[1]);

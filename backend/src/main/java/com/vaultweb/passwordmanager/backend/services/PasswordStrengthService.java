@@ -15,7 +15,7 @@ public class PasswordStrengthService {
     if (password.matches(".*[A-Z].*")) score += 20;
     if (password.matches(".*[a-z].*")) score += 20;
     if (password.matches(".*\\d.*")) score += 10;
-    if (password.matches(".*[@#$%^&+=!?.*()].*")) score += 10;
+    if (password.matches(".*[@#$%^&+=!?.()].*")) score += 10;
 
     return Math.min(score, 100);
   }
