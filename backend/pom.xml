@@ -140,10 +140,10 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <goals>
-                            <goal>check</goal>
-                            <goal>apply</goal>
-                        </goals>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
                     </execution>
                 </executions>
             </plugin>

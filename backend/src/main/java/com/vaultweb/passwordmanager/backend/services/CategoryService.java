@@ -47,6 +47,6 @@ public class CategoryService {
   public Category findOwned(Long id, Long ownerId) {
     return repository
         .findByIdAndOwnerId(id, ownerId)
-        .orElseThrow(() -> new NotFoundException("Category not found with id " + id));
+        .orElseThrow(() -> new NotFoundException("Category not found with id " + id + " for current user"));
   }
 }

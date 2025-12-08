@@ -59,6 +59,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       throws ServletException, IOException {
     if (HttpMethod.OPTIONS.matches(request.getMethod())) {
       response.setStatus(HttpServletResponse.SC_OK);
+      filterChain.doFilter(request, response);
       return;
     }
 

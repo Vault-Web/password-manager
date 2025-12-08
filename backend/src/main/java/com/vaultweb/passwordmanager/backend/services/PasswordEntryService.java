@@ -92,6 +92,6 @@ public class PasswordEntryService {
     }
     return categoryRepository
         .findByIdAndOwnerId(categoryId, ownerId)
-        .orElseThrow(() -> new NotFoundException("Category not found with id " + categoryId));
+        .orElseThrow(() -> new NotFoundException("Category not found with id " + categoryId + " for current user"));
   }
 }
