@@ -2,12 +2,14 @@ package com.vaultweb.passwordmanager.backend.controllers;
 
 import com.vaultweb.passwordmanager.backend.model.PasswordEntry;
 import com.vaultweb.passwordmanager.backend.model.dtos.PasswordEntryDto;
+import com.vaultweb.passwordmanager.backend.security.AuthenticatedUser;
 import com.vaultweb.passwordmanager.backend.services.PasswordEntryService;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,8 +28,10 @@ public class PasswordEntryController {
    *     resource.
    */
   @PostMapping
-  public ResponseEntity<PasswordEntryDto> create(@Valid @RequestBody PasswordEntryDto dto) {
-    PasswordEntry created = service.create(new PasswordEntry(dto));
+  public ResponseEntity<PasswordEntryDto> create(
+      @AuthenticationPrincipal AuthenticatedUser user, @Valid @RequestBody PasswordEntryDto dto) {
+    PasswordEntry created =
+        service.create(new PasswordEntry(dto), user.userId(), dto.getCategoryId());
     return ResponseEntity.created(URI.create("/api/passwords/" + created.getId()))
         .body(new PasswordEntryDto(created));
   }
@@ -39,8 +43,10 @@ public class PasswordEntryController {
    *     password entries.
    */
   @GetMapping
-  public ResponseEntity<List<PasswordEntryDto>> getAll() {
-    List<PasswordEntryDto> dtos = service.getAll().stream().map(PasswordEntryDto::new).toList();
+  public ResponseEntity<List<PasswordEntryDto>> getAll(
+      @AuthenticationPrincipal AuthenticatedUser user) {
+    List<PasswordEntryDto> dtos =
+        service.getAll(user.userId()).stream().map(PasswordEntryDto::new).toList();
     return ResponseEntity.ok(dtos);
   }
 
@@ -52,9 +58,10 @@ public class PasswordEntryController {
    *     404 status if not found
    */
   @GetMapping("/{id}")
-  public ResponseEntity<PasswordEntryDto> getById(@PathVariable Long id) {
+  public ResponseEntity<PasswordEntryDto> getById(
+      @AuthenticationPrincipal AuthenticatedUser user, @PathVariable Long id) {
     return service
-        .getById(id)
+        .getById(id, user.userId())
         .map(entry -> ResponseEntity.ok(new PasswordEntryDto(entry)))
         .orElse(ResponseEntity.notFound().build());
   }
@@ -69,8 +76,11 @@ public class PasswordEntryController {
    */
   @PutMapping("/{id}")
   public ResponseEntity<PasswordEntryDto> update(
-      @PathVariable Long id, @Valid @RequestBody PasswordEntryDto dto) {
-    PasswordEntry updated = service.update(id, new PasswordEntry(dto));
+      @AuthenticationPrincipal AuthenticatedUser user,
+      @PathVariable Long id,
+      @Valid @RequestBody PasswordEntryDto dto) {
+    PasswordEntry updated =
+        service.update(id, new PasswordEntry(dto), user.userId(), dto.getCategoryId());
     return ResponseEntity.ok(new PasswordEntryDto(updated));
   }
 
@@ -81,8 +91,9 @@ public class PasswordEntryController {
    * @return a ResponseEntity with no content if the deletion is successful
    */
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> delete(@PathVariable Long id) {
-    service.delete(id);
+  public ResponseEntity<Void> delete(
+      @AuthenticationPrincipal AuthenticatedUser user, @PathVariable Long id) {
+    service.delete(id, user.userId());
     return ResponseEntity.noContent().build();
   }
 }
