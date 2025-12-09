@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PasswordEntryRepository extends JpaRepository<PasswordEntry, Long> {
 
-	List<PasswordEntry> findAllByOwnerId(Long ownerId);
+  List<PasswordEntry> findAllByOwnerId(Long ownerId);
 
-	Optional<PasswordEntry> findByIdAndOwnerId(Long id, Long ownerId);
+  Optional<PasswordEntry> findByIdAndOwnerId(Long id, Long ownerId);
 }

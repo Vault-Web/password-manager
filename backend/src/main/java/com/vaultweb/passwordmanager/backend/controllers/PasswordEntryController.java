@@ -29,9 +29,9 @@ public class PasswordEntryController {
    */
   @PostMapping
   public ResponseEntity<PasswordEntryDto> create(
-      @AuthenticationPrincipal AuthenticatedUser user,
-      @Valid @RequestBody PasswordEntryDto dto) {
-    PasswordEntry created = service.create(new PasswordEntry(dto), user.userId(), dto.getCategoryId());
+      @AuthenticationPrincipal AuthenticatedUser user, @Valid @RequestBody PasswordEntryDto dto) {
+    PasswordEntry created =
+        service.create(new PasswordEntry(dto), user.userId(), dto.getCategoryId());
     return ResponseEntity.created(URI.create("/api/passwords/" + created.getId()))
         .body(new PasswordEntryDto(created));
   }

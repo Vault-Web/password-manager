@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -22,6 +24,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
  */
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(JwtAuthFilter.class);
 
   private final JwtUtil jwtUtil;
 
@@ -53,46 +57,55 @@ public class JwtAuthFilter extends OncePerRequestFilter {
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
-    if (HttpMethod.OPTIONS.matches(request.getMethod())) {
+    if (isCorsPreflightRequest(request)) {
       response.setStatus(HttpServletResponse.SC_OK);
+      filterChain.doFilter(request, response);
       return;
     }
 
     String path = request.getServletPath();
     if (path.startsWith("/api/auth/")
         || path.startsWith("/v3/api-docs")
-        || path.startsWith("/swagger-ui")) {
+        || path.startsWith("/swagger-ui")
+        || path.equals("/swagger-ui.html")
+        || path.startsWith("/swagger-resources")
+        || path.startsWith("/webjars")) {
       filterChain.doFilter(request, response);
       return;
     }
 
     final String authHeader = request.getHeader("Authorization");
-    if (authHeader != null && authHeader.startsWith("Bearer ")) {
-      String jwt = authHeader.substring(7);
-      if (jwtUtil.validateToken(jwt)) {
-        String username = jwtUtil.extractUsername(jwt);
-        Long userId = jwtUtil.extractUserId(jwt);
-        if (userId == null) {
-          response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing user context in token");
-          return;
-        }
-
-        AuthenticatedUser principal = new AuthenticatedUser(userId, username);
-        UsernamePasswordAuthenticationToken authToken =
-            new UsernamePasswordAuthenticationToken(
-                principal,
-                null,
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-      } else {
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
-        return;
-      }
-    } else {
+    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
       response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing Authorization header");
       return;
     }
 
+    String jwt = authHeader.substring(7);
+    if (!jwtUtil.validateToken(jwt)) {
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
+      return;
+    }
+
+    String username = jwtUtil.extractUsername(jwt);
+    Long userId = jwtUtil.extractUserId(jwt);
+    if (userId == null) {
+      LOGGER.warn("Token for subject {} does not contain required userId claim", username);
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing userId claim in token");
+      return;
+    }
+
+    AuthenticatedUser principal = new AuthenticatedUser(userId, username);
+    UsernamePasswordAuthenticationToken authToken =
+        new UsernamePasswordAuthenticationToken(
+            principal, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+    SecurityContextHolder.getContext().setAuthentication(authToken);
+
     filterChain.doFilter(request, response);
+  }
+
+  private boolean isCorsPreflightRequest(HttpServletRequest request) {
+    return HttpMethod.OPTIONS.matches(request.getMethod())
+        && request.getHeader("Origin") != null
+        && request.getHeader("Access-Control-Request-Method") != null;
   }
 }
