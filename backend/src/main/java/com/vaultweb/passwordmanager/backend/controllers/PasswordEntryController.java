@@ -2,6 +2,7 @@ package com.vaultweb.passwordmanager.backend.controllers;
 
 import com.vaultweb.passwordmanager.backend.model.PasswordEntry;
 import com.vaultweb.passwordmanager.backend.model.dtos.PasswordEntryDto;
+import com.vaultweb.passwordmanager.backend.model.dtos.PasswordRevealResponseDto;
 import com.vaultweb.passwordmanager.backend.security.AuthenticatedUser;
 import com.vaultweb.passwordmanager.backend.services.PasswordEntryService;
 import jakarta.validation.Valid;
@@ -65,6 +66,20 @@ public class PasswordEntryController {
         .map(entry -> ResponseEntity.ok(new PasswordEntryDto(entry)))
         .orElse(ResponseEntity.notFound().build());
   }
+
+  /**
+   * Reveals the plaintext password for a single entry. This endpoint is separate from the
+   * standard detail endpoint to avoid returning passwords by default.
+   */
+   @GetMapping("/{id}/reveal")
+   public ResponseEntity<PasswordRevealResponseDto> reveal(
+        @AuthenticationPrincipal AuthenticatedUser user, @PathVariable Long id) {
+      return service
+          .getById(id, user.userId())
+          .map(PasswordRevealResponseDto::fromEntry)
+          .map(ResponseEntity::ok)
+          .orElse(ResponseEntity.notFound().build());
+      }
 
   /**
    * Updates an existing password entry identified by its unique ID with the provided data.
