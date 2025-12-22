@@ -28,12 +28,11 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(status).body(response);
   }
 
-  @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<Map<String, Object>> handleIllegalArgument(
-      IllegalArgumentException ex, WebRequest request) {
-    log.warn("Invalid argument - Path: {}", request.getDescription(false));
-    return buildErrorResponse(
-        "Invalid request parameters", HttpStatus.BAD_REQUEST, "INVALID_ARGUMENT");
+  @ExceptionHandler(InvalidCredentialsException.class)
+  public ResponseEntity<Map<String, Object>> handleInvalidCredentials(
+      InvalidCredentialsException ex, WebRequest request) {
+    log.warn("Invalid credentials - Path: {}", request.getDescription(false));
+    return buildErrorResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS");
   }
 
   @ExceptionHandler(NotFoundException.class)
@@ -41,19 +40,6 @@ public class GlobalExceptionHandler {
       NotFoundException ex, WebRequest request) {
     log.info("Resource not found: {} - Path: {}", ex.getMessage(), request.getDescription(false));
     return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND, "NOT_FOUND");
-  }
-
-  @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<Map<String, Object>> handleValidationErrors(
-      MethodArgumentNotValidException ex, WebRequest request) {
-
-    String errorMessage =
-        ex.getBindingResult().getFieldErrors().stream()
-            .findFirst()
-            .map(DefaultMessageSourceResolvable::getDefaultMessage)
-            .orElse("Invalid request");
-    log.warn("Validation error: {} - Path: {}", errorMessage, request.getDescription(false));
-    return buildErrorResponse(errorMessage, HttpStatus.BAD_REQUEST, "VALIDATION_ERROR");
   }
 
   @ExceptionHandler(PasswordBreachCheckException.class)
@@ -67,6 +53,34 @@ public class GlobalExceptionHandler {
         "Unable to verify password security at this time. Please try again later",
         HttpStatus.SERVICE_UNAVAILABLE,
         "BREACH_CHECK_UNAVAILABLE");
+  }
+
+  @ExceptionHandler(UnauthorizedException.class)
+  public ResponseEntity<Map<String, Object>> handleUnauthorized(
+      UnauthorizedException ex, WebRequest request) {
+    log.warn("Unauthorized access - Path: {}", request.getDescription(false));
+    return buildErrorResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED, "UNAUTHORIZED");
+  }
+
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<Map<String, Object>> handleIllegalArgument(
+      IllegalArgumentException ex, WebRequest request) {
+    log.warn("Invalid argument - Path: {}", request.getDescription(false));
+    return buildErrorResponse(
+        "Invalid request parameters", HttpStatus.BAD_REQUEST, "INVALID_ARGUMENT");
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<Map<String, Object>> handleValidationErrors(
+      MethodArgumentNotValidException ex, WebRequest request) {
+
+    String errorMessage =
+        ex.getBindingResult().getFieldErrors().stream()
+            .findFirst()
+            .map(DefaultMessageSourceResolvable::getDefaultMessage)
+            .orElse("Invalid request");
+    log.warn("Validation error: {} - Path: {}", errorMessage, request.getDescription(false));
+    return buildErrorResponse(errorMessage, HttpStatus.BAD_REQUEST, "VALIDATION_ERROR");
   }
 
   // Catch-all for unexpected errors
