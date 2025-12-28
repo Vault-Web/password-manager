@@ -20,8 +20,10 @@
                 - 📄 [PasswordGenerationController.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/controllers/PasswordGenerationController.java)
               - 📁 **exceptions**
                 - 📄 [GlobalExceptionHandler.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/exceptions/GlobalExceptionHandler.java)
+                - 📄 [InvalidCredentialsException.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/exceptions/InvalidCredentialsException.java)
                 - 📄 [NotFoundException.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/exceptions/NotFoundException.java)
                 - 📄 [PasswordBreachCheckException.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/exceptions/PasswordBreachCheckException.java)
+                - 📄 [UnauthorizedException.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/exceptions/UnauthorizedException.java)
               - 📁 **model**
                 - 📄 [Category.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/model/Category.java)
                 - 📄 [PasswordEntry.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/model/PasswordEntry.java)
