@@ -62,6 +62,15 @@ public class GlobalExceptionHandler {
     return buildErrorResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED, "UNAUTHORIZED");
   }
 
+  // NEW – semantic request validation error
+  @ExceptionHandler(InvalidRequestException.class)
+  public ResponseEntity<Map<String, Object>> handleInvalidRequest(
+      InvalidRequestException ex, WebRequest request) {
+    log.warn("Invalid request - Path: {}", request.getDescription(false));
+    return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, "INVALID_REQUEST");
+  }
+
+  // fallback for legacy IllegalArgumentException
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<Map<String, Object>> handleIllegalArgument(
       IllegalArgumentException ex, WebRequest request) {
@@ -79,13 +88,14 @@ public class GlobalExceptionHandler {
             .findFirst()
             .map(DefaultMessageSourceResolvable::getDefaultMessage)
             .orElse("Invalid request");
+
     log.warn("Validation error: {} - Path: {}", errorMessage, request.getDescription(false));
     return buildErrorResponse(errorMessage, HttpStatus.BAD_REQUEST, "VALIDATION_ERROR");
   }
 
-  // Catch-all for unexpected errors
   @ExceptionHandler(Exception.class)
-  public ResponseEntity<Map<String, Object>> handleGeneralErrors(Exception ex, WebRequest request) {
+  public ResponseEntity<Map<String, Object>> handleGeneralErrors(
+      Exception ex, WebRequest request) {
     log.error(
         "Unexpected error - Path: {} - Exception: {}",
         request.getDescription(false),
