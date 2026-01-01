@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaultweb.passwordmanager.backend.exceptions.InvalidRequestException;
+
 /**
  * @author rashmi.soni
  */
@@ -30,6 +32,8 @@ class PasswordGenerationServiceTest {
 
   @Test
   void errorsWhenTooShort() {
-    assertThrows(IllegalArgumentException.class, () -> svc.generate(1, true, true, true));
+    assertThrows(InvalidRequestException.class, () -> {
+    svc.generate(5, true, true, true);
+});
   }
 }

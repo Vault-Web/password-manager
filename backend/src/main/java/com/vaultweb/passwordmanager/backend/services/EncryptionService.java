@@ -68,7 +68,8 @@ public class EncryptionService {
       byte[] decoded = Base64.getDecoder().decode(cipherText);
 
       if (decoded.length < GCM_IV_LENGTH + 16) {
-        throw new InvalidRequestException("Invalid cipher text: too short to contain IV and GCM tag");
+        throw new InvalidRequestException(
+            "Invalid cipher text: too short to contain IV and GCM tag");
       }
 
       ByteBuffer buffer = ByteBuffer.wrap(decoded);
