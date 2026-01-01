@@ -33,8 +33,7 @@ public class EncryptionService {
     }
 
     if (!(keyBytes.length == 16 || keyBytes.length == 24 || keyBytes.length == 32)) {
-      throw new InvalidRequestException(
-          "Encryption key must be 16, 24, or 32 bytes long");
+      throw new InvalidRequestException("Encryption key must be 16, 24, or 32 bytes long");
     }
 
     this.secretKey = new SecretKeySpec(keyBytes, "AES");
@@ -69,8 +68,7 @@ public class EncryptionService {
       byte[] decoded = Base64.getDecoder().decode(cipherText);
 
       if (decoded.length < GCM_IV_LENGTH + 16) {
-        throw new InvalidRequestException(
-            "Invalid cipher text: too short to contain IV and GCM tag");
+        throw new InvalidRequestException("Invalid cipher text: too short to contain IV and GCM tag");
       }
 
       ByteBuffer buffer = ByteBuffer.wrap(decoded);

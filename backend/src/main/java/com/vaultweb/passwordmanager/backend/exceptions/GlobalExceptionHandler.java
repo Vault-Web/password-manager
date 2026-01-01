@@ -75,8 +75,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<Map<String, Object>> handleIllegalArgument(
       IllegalArgumentException ex, WebRequest request) {
     log.warn("Invalid argument - Path: {}", request.getDescription(false));
-    return buildErrorResponse(
-        "Invalid request parameters", HttpStatus.BAD_REQUEST, "INVALID_ARGUMENT");
+    return buildErrorResponse("Invalid request parameters", HttpStatus.BAD_REQUEST, "INVALID_ARGUMENT");
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)

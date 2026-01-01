@@ -44,8 +44,7 @@ public class PasswordGenerationService {
     if (useSpecial) pools.add(SPECIAL);
 
     if (pools.isEmpty()) {
-      throw new InvalidRequestException(
-          "At least one character class must be enabled.");
+      throw new InvalidRequestException("At least one character class must be enabled.");
     }
 
     StringBuilder allChars = new StringBuilder();
