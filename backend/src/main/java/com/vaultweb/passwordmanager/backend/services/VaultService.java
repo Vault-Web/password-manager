@@ -28,6 +28,7 @@ public class VaultService {
 
   /**
    * Sets up a new vault for the given owner with the specified master password.
+   *
    * @param ownerId
    * @param masterPassword
    */
@@ -58,6 +59,7 @@ public class VaultService {
 
   /**
    * Verifies the given master password for the owner's vault.
+   *
    * @param ownerId
    * @param masterPassword
    */
@@ -91,6 +93,7 @@ public class VaultService {
 
   /**
    * Rotates the master password for the owner's vault.
+   *
    * @param ownerId
    * @param oldMasterPassword
    * @param newMasterPassword
@@ -128,12 +131,14 @@ public class VaultService {
 
   /**
    * Encrypts a plaintext password for storage. If vault is not initialized, returns plaintext.
+   *
    * @param ownerId
    * @param masterPassword
    * @param plainPassword
    * @return the encrypted password string for storage
    */
-  public String encryptPasswordForStorage(Long ownerId, String masterPassword, String plainPassword) {
+  public String encryptPasswordForStorage(
+      Long ownerId, String masterPassword, String plainPassword) {
     if (!isInitialized(ownerId)) {
       return plainPassword;
     }
@@ -157,6 +162,7 @@ public class VaultService {
 
   /**
    * Decrypts a stored password for reveal. If vault is not initialized, returns stored value.
+   *
    * @param ownerId
    * @param masterPassword
    * @param entry
@@ -178,7 +184,8 @@ public class VaultService {
       return crypto.decryptPasswordWithDek(dek, stored, ownerId);
     }
 
-    // Legacy: stored value is plaintext (after server-side decrypt). Require master password anyway.
+    // Legacy: stored value is plaintext (after server-side decrypt). Require master password
+    // anyway.
     String migrated = crypto.encryptPasswordWithDek(dek, stored, ownerId);
     entry.setPassword(migrated);
     passwordEntryRepository.save(entry);
@@ -187,6 +194,7 @@ public class VaultService {
 
   /**
    * Decrypts a stored password for reveal. If vault is not initialized, returns stored value.
+   *
    * @param ownerId
    * @param dek
    * @param entry
@@ -214,6 +222,7 @@ public class VaultService {
 
   /**
    * Migrates all plaintext passwords to vault-encrypted format.
+   *
    * @param ownerId
    * @param masterPassword
    * @return the number of passwords migrated
@@ -246,6 +255,7 @@ public class VaultService {
 
   /**
    * migrates all plaintext passwords to vault-encrypted format.
+   *
    * @param ownerId
    * @param dek
    * @return the number of passwords migrated
@@ -276,6 +286,7 @@ public class VaultService {
 
   /**
    * Unwraps the DEK for the owner's vault using the provided master password.
+   *
    * @param ownerId
    * @param masterPassword
    * @return

@@ -53,8 +53,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<Map<String, Object>> handleVaultLocked(
       VaultLockedException ex, WebRequest request) {
     log.warn("Vault locked - Path: {}", request.getDescription(false));
-    return buildErrorResponse(
-        ex.getMessage(), HttpStatus.PRECONDITION_REQUIRED, "VAULT_LOCKED");
+    return buildErrorResponse(ex.getMessage(), HttpStatus.PRECONDITION_REQUIRED, "VAULT_LOCKED");
   }
 
   @ExceptionHandler(NotFoundException.class)

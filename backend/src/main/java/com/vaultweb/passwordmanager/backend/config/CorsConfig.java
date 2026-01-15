@@ -14,8 +14,7 @@ public class CorsConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
-    config.setAllowedOrigins(
-      List.of("http://localhost:4200"));
+    config.setAllowedOrigins(List.of("http://localhost:4200"));
     config.setAllowedHeaders(
         Arrays.asList(
             "Authorization",

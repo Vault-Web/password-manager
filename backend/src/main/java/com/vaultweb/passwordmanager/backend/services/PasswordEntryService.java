@@ -33,12 +33,12 @@ public class PasswordEntryService {
     return repository.save(entry);
   }
 
-    /**
-     * Create entry by providing the user's master password.
-     *
-     * @return the created PasswordEntry
-     */
-    public PasswordEntry create(
+  /**
+   * Create entry by providing the user's master password.
+   *
+   * @return the created PasswordEntry
+   */
+  public PasswordEntry create(
       PasswordEntry entry, Long ownerId, Long categoryId, String masterPassword) {
     entry.setOwnerId(ownerId);
     entry.setCategory(resolveCategory(categoryId, ownerId));
@@ -47,12 +47,12 @@ public class PasswordEntryService {
     return repository.save(entry);
   }
 
-    /**
-     * Create entry using either an active vault session token or a master password.
-     *
-     * @return the created PasswordEntry
-     */
-    public PasswordEntry create(
+  /**
+   * Create entry using either an active vault session token or a master password.
+   *
+   * @return the created PasswordEntry
+   */
+  public PasswordEntry create(
       PasswordEntry entry,
       Long ownerId,
       Long categoryId,
@@ -105,7 +105,7 @@ public class PasswordEntryService {
     existing.setName(updated.getName());
     existing.setUsername(updated.getUsername());
     existing.setPassword(
-      vaultService.encryptPasswordForStorage(ownerId, (String) null, updated.getPassword()));
+        vaultService.encryptPasswordForStorage(ownerId, (String) null, updated.getPassword()));
     existing.setUrl(updated.getUrl());
     existing.setNotes(updated.getNotes());
     existing.setCategory(resolveCategory(categoryId, ownerId));
@@ -113,12 +113,12 @@ public class PasswordEntryService {
     return repository.save(existing);
   }
 
-    /**
-     * Update entry by providing the user's master password.
-     *
-     * @return the updated PasswordEntry
-     */
-    public PasswordEntry update(
+  /**
+   * Update entry by providing the user's master password.
+   *
+   * @return the updated PasswordEntry
+   */
+  public PasswordEntry update(
       Long id, PasswordEntry updated, Long ownerId, Long categoryId, String masterPassword) {
     PasswordEntry existing =
         repository
@@ -136,12 +136,12 @@ public class PasswordEntryService {
     return repository.save(existing);
   }
 
-    /**
-     * Update entry using either an active vault session token or a master password.
-     *
-     * @return the updated PasswordEntry
-     */
-    public PasswordEntry update(
+  /**
+   * Update entry using either an active vault session token or a master password.
+   *
+   * @return the updated PasswordEntry
+   */
+  public PasswordEntry update(
       Long id,
       PasswordEntry updated,
       Long ownerId,
@@ -187,12 +187,12 @@ public class PasswordEntryService {
     return new PasswordRevealResponseDto(entry.getId(), entry.getName(), plainPassword);
   }
 
-    /**
-     * Reveal (decrypt) a password using either an active vault session token or a master password.
-     *
-     * @return the PasswordRevealResponseDto containing the revealed password
-     */
-    public PasswordRevealResponseDto reveal(
+  /**
+   * Reveal (decrypt) a password using either an active vault session token or a master password.
+   *
+   * @return the PasswordRevealResponseDto containing the revealed password
+   */
+  public PasswordRevealResponseDto reveal(
       Long id, Long ownerId, String masterPassword, String vaultToken) {
     PasswordEntry entry =
         repository
@@ -226,6 +226,7 @@ public class PasswordEntryService {
 
   /**
    * Resolves the Category entity for the given categoryId and ownerId.
+   *
    * @param categoryId
    * @param ownerId
    * @return the Category entity, or null if categoryId is null

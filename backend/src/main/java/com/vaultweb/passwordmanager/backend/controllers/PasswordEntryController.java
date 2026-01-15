@@ -1,13 +1,13 @@
 package com.vaultweb.passwordmanager.backend.controllers;
 
-import com.vaultweb.passwordmanager.backend.model.PasswordEntry;
-import com.vaultweb.passwordmanager.backend.model.dtos.PasswordRevealRequestDto;
-import com.vaultweb.passwordmanager.backend.model.dtos.PasswordEntryDto;
-import com.vaultweb.passwordmanager.backend.model.dtos.PasswordRevealResponseDto;
 import com.vaultweb.passwordmanager.backend.exceptions.VaultLockedException;
-import com.vaultweb.passwordmanager.backend.services.VaultService;
+import com.vaultweb.passwordmanager.backend.model.PasswordEntry;
+import com.vaultweb.passwordmanager.backend.model.dtos.PasswordEntryDto;
+import com.vaultweb.passwordmanager.backend.model.dtos.PasswordRevealRequestDto;
+import com.vaultweb.passwordmanager.backend.model.dtos.PasswordRevealResponseDto;
 import com.vaultweb.passwordmanager.backend.security.AuthenticatedUser;
 import com.vaultweb.passwordmanager.backend.services.PasswordEntryService;
+import com.vaultweb.passwordmanager.backend.services.VaultService;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -38,8 +38,12 @@ public class PasswordEntryController {
       @RequestHeader(value = "X-Vault-Token", required = false) String vaultToken,
       @Valid @RequestBody PasswordEntryDto dto) {
     PasswordEntry created =
-      service.create(
-        new PasswordEntry(dto), user.userId(), dto.getCategoryId(), dto.getMasterPassword(), vaultToken);
+        service.create(
+            new PasswordEntry(dto),
+            user.userId(),
+            dto.getCategoryId(),
+            dto.getMasterPassword(),
+            vaultToken);
     return ResponseEntity.created(URI.create("/api/passwords/" + created.getId()))
         .body(new PasswordEntryDto(created));
   }
@@ -95,9 +99,7 @@ public class PasswordEntryController {
         .orElse(ResponseEntity.notFound().build());
   }
 
-  /**
-   * Reveals a password for vault-enabled users. Requires masterPassword in the request body.
-   */
+  /** Reveals a password for vault-enabled users. Requires masterPassword in the request body. */
   @PostMapping("/{id}/reveal")
   public ResponseEntity<PasswordRevealResponseDto> revealWithMasterPassword(
       @AuthenticationPrincipal AuthenticatedUser user,

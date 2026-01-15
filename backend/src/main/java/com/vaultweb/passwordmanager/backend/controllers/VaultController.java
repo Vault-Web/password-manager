@@ -5,9 +5,9 @@ import com.vaultweb.passwordmanager.backend.model.dtos.VaultMigrateResponseDto;
 import com.vaultweb.passwordmanager.backend.model.dtos.VaultRotateRequestDto;
 import com.vaultweb.passwordmanager.backend.model.dtos.VaultSetupRequestDto;
 import com.vaultweb.passwordmanager.backend.model.dtos.VaultStatusResponseDto;
+import com.vaultweb.passwordmanager.backend.model.dtos.VaultUnlockResponseDto;
 import com.vaultweb.passwordmanager.backend.model.dtos.VaultVerifyRequestDto;
 import com.vaultweb.passwordmanager.backend.model.dtos.VaultVerifyResponseDto;
-import com.vaultweb.passwordmanager.backend.model.dtos.VaultUnlockResponseDto;
 import com.vaultweb.passwordmanager.backend.security.AuthenticatedUser;
 import com.vaultweb.passwordmanager.backend.services.VaultService;
 import com.vaultweb.passwordmanager.backend.services.VaultSessionService;
@@ -18,8 +18,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -32,6 +32,7 @@ public class VaultController {
 
   /**
    * Checks if the vault is initialized for the authenticated user.
+   *
    * @param user
    * @return the vault status response
    */
@@ -43,26 +44,30 @@ public class VaultController {
 
   /**
    * Sets up the vault with the provided master password.
+   *
    * @param user
    * @param dto
    * @return no content response
    */
   @PostMapping("/setup")
   public ResponseEntity<Void> setup(
-      @AuthenticationPrincipal AuthenticatedUser user, @Valid @RequestBody VaultSetupRequestDto dto) {
+      @AuthenticationPrincipal AuthenticatedUser user,
+      @Valid @RequestBody VaultSetupRequestDto dto) {
     vaultService.setup(user.userId(), dto.getMasterPassword());
     return ResponseEntity.noContent().build();
   }
 
   /**
    * Verifies the provided master password for the authenticated user.
+   *
    * @param user
    * @param dto
    * @return the vault verify response
    */
   @PostMapping("/verify")
   public ResponseEntity<VaultVerifyResponseDto> verify(
-      @AuthenticationPrincipal AuthenticatedUser user, @Valid @RequestBody VaultVerifyRequestDto dto) {
+      @AuthenticationPrincipal AuthenticatedUser user,
+      @Valid @RequestBody VaultVerifyRequestDto dto) {
     vaultService.verify(user.userId(), dto.getMasterPassword());
     return ResponseEntity.ok(new VaultVerifyResponseDto(true));
   }
@@ -74,7 +79,8 @@ public class VaultController {
    */
   @PostMapping("/unlock")
   public ResponseEntity<VaultUnlockResponseDto> unlock(
-      @AuthenticationPrincipal AuthenticatedUser user, @Valid @RequestBody VaultVerifyRequestDto dto) {
+      @AuthenticationPrincipal AuthenticatedUser user,
+      @Valid @RequestBody VaultVerifyRequestDto dto) {
     VaultSessionService.VaultUnlock unlock =
         vaultSessionService.unlock(user.userId(), dto.getMasterPassword());
     return ResponseEntity.ok(new VaultUnlockResponseDto(unlock.token(), unlock.expiresAt()));
@@ -82,6 +88,7 @@ public class VaultController {
 
   /**
    * Locks the vault session associated with the provided vault token.
+   *
    * @param user
    * @param vaultToken
    * @return no content response
@@ -96,19 +103,22 @@ public class VaultController {
 
   /**
    * Rotates the master password, re-encrypting all vault data with the new password.
+   *
    * @param user
    * @param dto
    * @return no content response
    */
   @PostMapping("/rotate")
   public ResponseEntity<Void> rotate(
-      @AuthenticationPrincipal AuthenticatedUser user, @Valid @RequestBody VaultRotateRequestDto dto) {
+      @AuthenticationPrincipal AuthenticatedUser user,
+      @Valid @RequestBody VaultRotateRequestDto dto) {
     vaultService.rotate(user.userId(), dto.getCurrentMasterPassword(), dto.getNewMasterPassword());
     return ResponseEntity.noContent().build();
   }
 
   /**
-   * Migrates all plaintext passwords to vault-encrypted format. 
+   * Migrates all plaintext passwords to vault-encrypted format.
+   *
    * @param user
    * @param vaultToken
    * @param dto
@@ -125,7 +135,8 @@ public class VaultController {
       migrated = vaultService.migrateAllPasswords(user.userId(), dek);
     } else {
       if (dto == null || dto.getMasterPassword() == null || dto.getMasterPassword().isBlank()) {
-        throw new IllegalArgumentException("masterPassword is required when no X-Vault-Token is provided");
+        throw new IllegalArgumentException(
+            "masterPassword is required when no X-Vault-Token is provided");
       }
       migrated = vaultService.migrateAllPasswords(user.userId(), dto.getMasterPassword());
     }

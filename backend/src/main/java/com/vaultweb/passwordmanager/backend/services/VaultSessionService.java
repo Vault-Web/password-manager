@@ -25,8 +25,7 @@ public class VaultSessionService {
 
   @Autowired
   public VaultSessionService(
-      VaultService vaultService,
-      @Value("${vault.session.ttlSeconds:900}") long ttlSeconds) {
+      VaultService vaultService, @Value("${vault.session.ttlSeconds:900}") long ttlSeconds) {
     this(vaultService, ttlSeconds, Clock.systemUTC());
   }
 
@@ -38,7 +37,9 @@ public class VaultSessionService {
   }
 
   /**
-   * Unlocks the vault for the given user by verifying the master password and creating a new session.
+   * Unlocks the vault for the given user by verifying the master password and creating a new
+   * session.
+   *
    * @param ownerId
    * @param masterPassword
    * @return the vault unlock information containing the session token and expiration time
@@ -59,6 +60,7 @@ public class VaultSessionService {
 
   /**
    * Requires a valid DEK from an active vault session.
+   *
    * @param ownerId
    * @param token
    * @return the DEK bytes
@@ -87,6 +89,7 @@ public class VaultSessionService {
 
   /**
    * Locks the vault session associated with the given token.
+   *
    * @param ownerId
    * @param token
    */
@@ -103,6 +106,7 @@ public class VaultSessionService {
 
   /**
    * Generates a secure random token.
+   *
    * @return the generated token string
    */
   private String generateToken() {
