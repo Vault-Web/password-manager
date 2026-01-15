@@ -113,6 +113,7 @@ public class VaultController {
       @AuthenticationPrincipal AuthenticatedUser user,
       @Valid @RequestBody VaultRotateRequestDto dto) {
     vaultService.rotate(user.userId(), dto.getCurrentMasterPassword(), dto.getNewMasterPassword());
+    vaultSessionService.invalidateAll(user.userId());
     return ResponseEntity.noContent().build();
   }
 
@@ -128,7 +129,7 @@ public class VaultController {
   public ResponseEntity<VaultMigrateResponseDto> migrate(
       @AuthenticationPrincipal AuthenticatedUser user,
       @RequestHeader(value = "X-Vault-Token", required = false) String vaultToken,
-      @Valid @RequestBody(required = false) VaultMigrateRequestDto dto) {
+      @RequestBody(required = false) VaultMigrateRequestDto dto) {
     int migrated;
     if (vaultToken != null && !vaultToken.isBlank()) {
       byte[] dek = vaultSessionService.requireDek(user.userId(), vaultToken);
@@ -137,6 +138,12 @@ public class VaultController {
       if (dto == null || dto.getMasterPassword() == null || dto.getMasterPassword().isBlank()) {
         throw new IllegalArgumentException(
             "masterPassword is required when no X-Vault-Token is provided");
+      }
+
+      int masterPasswordLength = dto.getMasterPassword().length();
+      if (masterPasswordLength < 8 || masterPasswordLength > 128) {
+        throw new IllegalArgumentException(
+            "masterPassword must be between 8 and 128 characters when no X-Vault-Token is provided");
       }
       migrated = vaultService.migrateAllPasswords(user.userId(), dto.getMasterPassword());
     }

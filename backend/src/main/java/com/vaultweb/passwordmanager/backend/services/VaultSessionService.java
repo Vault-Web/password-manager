@@ -105,6 +105,19 @@ public class VaultSessionService {
   }
 
   /**
+   * Invalidates (removes) all active vault sessions for the given user.
+   *
+   * @param ownerId the user whose sessions should be invalidated
+   */
+  public void invalidateAll(Long ownerId) {
+    if (ownerId == null) {
+      return;
+    }
+
+    sessions.entrySet().removeIf(entry -> ownerId.equals(entry.getValue().ownerId()));
+  }
+
+  /**
    * Generates a secure random token.
    *
    * @return the generated token string

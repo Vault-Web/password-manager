@@ -8,6 +8,7 @@ import com.vaultweb.passwordmanager.backend.model.PasswordEntry;
 import com.vaultweb.passwordmanager.backend.model.Vault;
 import com.vaultweb.passwordmanager.backend.repositories.PasswordEntryRepository;
 import com.vaultweb.passwordmanager.backend.repositories.VaultRepository;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -239,6 +240,7 @@ public class VaultService {
     byte[] dek = unwrapDek(ownerId, masterPassword);
 
     List<PasswordEntry> entries = passwordEntryRepository.findAllByOwnerId(ownerId);
+    List<PasswordEntry> toUpdate = new ArrayList<>();
     int migrated = 0;
     for (PasswordEntry entry : entries) {
       String stored = entry.getPassword();
@@ -246,15 +248,19 @@ public class VaultService {
         continue;
       }
       entry.setPassword(crypto.encryptPasswordWithDek(dek, stored, ownerId));
-      passwordEntryRepository.save(entry);
+      toUpdate.add(entry);
       migrated++;
+    }
+
+    if (!toUpdate.isEmpty()) {
+      passwordEntryRepository.saveAll(toUpdate);
     }
 
     return migrated;
   }
 
   /**
-   * migrates all plaintext passwords to vault-encrypted format.
+   * Migrates all plaintext passwords to vault-encrypted format.
    *
    * @param ownerId
    * @param dek
@@ -270,6 +276,7 @@ public class VaultService {
     }
 
     List<PasswordEntry> entries = passwordEntryRepository.findAllByOwnerId(ownerId);
+    List<PasswordEntry> toUpdate = new ArrayList<>();
     int migrated = 0;
     for (PasswordEntry entry : entries) {
       String stored = entry.getPassword();
@@ -277,8 +284,12 @@ public class VaultService {
         continue;
       }
       entry.setPassword(crypto.encryptPasswordWithDek(dek, stored, ownerId));
-      passwordEntryRepository.save(entry);
+      toUpdate.add(entry);
       migrated++;
+    }
+
+    if (!toUpdate.isEmpty()) {
+      passwordEntryRepository.saveAll(toUpdate);
     }
 
     return migrated;
@@ -289,7 +300,7 @@ public class VaultService {
    *
    * @param ownerId
    * @param masterPassword
-   * @return
+   * @return the unwrapped DEK bytes for the owner's vault
    */
   private byte[] unwrapDek(Long ownerId, String masterPassword) {
     Vault vault =

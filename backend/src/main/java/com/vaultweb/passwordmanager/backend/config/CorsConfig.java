@@ -23,7 +23,8 @@ public class CorsConfig {
             "Accept",
             "Origin",
             "Access-Control-Request-Method",
-            "Access-Control-Request-Headers"));
+            "Access-Control-Request-Headers",
+            "X-Vault-Token"));
     config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     config.setAllowCredentials(true);
 

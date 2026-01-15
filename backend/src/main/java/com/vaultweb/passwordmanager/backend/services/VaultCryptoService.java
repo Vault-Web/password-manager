@@ -52,13 +52,15 @@ public class VaultCryptoService {
    * @return the derived KEK bytes
    */
   public byte[] deriveKek(String masterPassword, byte[] salt, int iterations) {
+    PBEKeySpec spec =
+        new PBEKeySpec(masterPassword.toCharArray(), salt, iterations, 8 * PBKDF2_KEY_LEN_BYTES);
     try {
-      PBEKeySpec spec =
-          new PBEKeySpec(masterPassword.toCharArray(), salt, iterations, 8 * PBKDF2_KEY_LEN_BYTES);
       SecretKeyFactory skf = SecretKeyFactory.getInstance(KDF_ALGORITHM);
       return skf.generateSecret(spec).getEncoded();
     } catch (GeneralSecurityException e) {
       throw new IllegalStateException("Unable to derive key", e);
+    } finally {
+      spec.clearPassword();
     }
   }
 
