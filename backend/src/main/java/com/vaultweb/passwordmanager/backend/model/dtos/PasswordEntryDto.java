@@ -26,6 +26,9 @@ public class PasswordEntryDto {
   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
   private String password;
 
+  @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+  private String masterPassword;
+
   private String url;
 
   @Size(max = 500)
