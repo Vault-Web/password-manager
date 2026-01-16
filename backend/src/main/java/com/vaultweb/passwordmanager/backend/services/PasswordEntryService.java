@@ -28,8 +28,7 @@ public class PasswordEntryService {
   public PasswordEntry create(PasswordEntry entry, Long ownerId, Long categoryId) {
     entry.setOwnerId(ownerId);
     entry.setCategory(resolveCategory(categoryId, ownerId));
-    entry.setPassword(
-        vaultService.encryptPasswordForStorage(ownerId, (String) null, entry.getPassword()));
+    entry.setPassword(vaultService.encryptPasswordForStorage(ownerId, null, entry.getPassword()));
     return repository.save(entry);
   }
 
@@ -63,7 +62,8 @@ public class PasswordEntryService {
 
     if (vaultToken != null && !vaultToken.isBlank()) {
       byte[] dek = vaultSessionService.requireDek(ownerId, vaultToken);
-      entry.setPassword(vaultService.encryptPasswordForStorage(ownerId, dek, entry.getPassword()));
+      entry.setPassword(
+          vaultService.encryptPasswordForStorageWithDek(ownerId, dek, entry.getPassword()));
       return repository.save(entry);
     }
 
@@ -105,7 +105,7 @@ public class PasswordEntryService {
     existing.setName(updated.getName());
     existing.setUsername(updated.getUsername());
     existing.setPassword(
-        vaultService.encryptPasswordForStorage(ownerId, (String) null, updated.getPassword()));
+        vaultService.encryptPasswordForStorage(ownerId, null, updated.getPassword()));
     existing.setUrl(updated.getUrl());
     existing.setNotes(updated.getNotes());
     existing.setCategory(resolveCategory(categoryId, ownerId));
@@ -159,7 +159,7 @@ public class PasswordEntryService {
     if (vaultToken != null && !vaultToken.isBlank()) {
       byte[] dek = vaultSessionService.requireDek(ownerId, vaultToken);
       existing.setPassword(
-          vaultService.encryptPasswordForStorage(ownerId, dek, updated.getPassword()));
+          vaultService.encryptPasswordForStorageWithDek(ownerId, dek, updated.getPassword()));
     } else {
       existing.setPassword(
           vaultService.encryptPasswordForStorage(ownerId, masterPassword, updated.getPassword()));

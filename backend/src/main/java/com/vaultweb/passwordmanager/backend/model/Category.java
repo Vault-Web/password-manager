@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -35,7 +36,7 @@ public class Category {
   @Size(max = 60)
   private String name;
 
-  @Size(max = 7)
+  @Pattern(regexp = "^#[0-9a-fA-F]{6}$", message = "Color must be a hex value like #AABBCC")
   private String color;
 
   @Size(max = 200)

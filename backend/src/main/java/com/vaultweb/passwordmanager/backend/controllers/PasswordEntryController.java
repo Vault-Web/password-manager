@@ -1,6 +1,7 @@
 package com.vaultweb.passwordmanager.backend.controllers;
 
 import com.vaultweb.passwordmanager.backend.exceptions.VaultLockedException;
+import com.vaultweb.passwordmanager.backend.exceptions.VaultNotInitializedException;
 import com.vaultweb.passwordmanager.backend.model.PasswordEntry;
 import com.vaultweb.passwordmanager.backend.model.dtos.PasswordEntryDto;
 import com.vaultweb.passwordmanager.backend.model.dtos.PasswordRevealRequestDto;
@@ -87,6 +88,10 @@ public class PasswordEntryController {
   @GetMapping("/{id}/reveal")
   public ResponseEntity<PasswordRevealResponseDto> reveal(
       @AuthenticationPrincipal AuthenticatedUser user, @PathVariable Long id) {
+    if (vaultService.isInitializationRequired()) {
+      throw new VaultNotInitializedException(
+          "Vault must be initialized. Use POST /api/vault/setup before revealing passwords.");
+    }
     if (vaultService.isInitialized(user.userId())) {
       throw new VaultLockedException(
           "Master password required. Use POST /api/passwords/{id}/reveal with masterPassword.");
@@ -107,6 +112,14 @@ public class PasswordEntryController {
       @RequestHeader(value = "X-Vault-Token", required = false) String vaultToken,
       @RequestBody(required = false) PasswordRevealRequestDto dto) {
     String masterPassword = dto != null ? dto.getMasterPassword() : null;
+
+    if (vaultToken == null || vaultToken.isBlank()) {
+      if (masterPassword == null || masterPassword.isBlank()) {
+        throw new IllegalArgumentException(
+            "masterPassword is required when no X-Vault-Token is provided");
+      }
+    }
+
     return ResponseEntity.ok(service.reveal(id, user.userId(), masterPassword, vaultToken));
   }
 

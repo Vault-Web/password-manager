@@ -141,10 +141,11 @@ public class VaultController {
       }
 
       int masterPasswordLength = dto.getMasterPassword().length();
-      if (masterPasswordLength < 8 || masterPasswordLength > 128) {
+      if (masterPasswordLength < 8 || masterPasswordLength > 1024) {
         throw new IllegalArgumentException(
-            "masterPassword must be between 8 and 128 characters when no X-Vault-Token is provided");
+            "masterPassword must be between 8 and 1024 characters when no X-Vault-Token is provided");
       }
+
       migrated = vaultService.migrateAllPasswords(user.userId(), dto.getMasterPassword());
     }
     return ResponseEntity.ok(new VaultMigrateResponseDto(migrated));

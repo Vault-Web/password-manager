@@ -1,14 +1,17 @@
 package com.vaultweb.passwordmanager.backend.services;
 
 import com.vaultweb.passwordmanager.backend.exceptions.VaultLockedException;
+import com.vaultweb.passwordmanager.backend.exceptions.VaultNotInitializedException;
 import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -46,7 +49,7 @@ public class VaultSessionService {
    */
   public VaultUnlock unlock(Long ownerId, String masterPassword) {
     if (!vaultService.isInitialized(ownerId)) {
-      throw new VaultLockedException("Vault is not initialized");
+      throw new VaultNotInitializedException("Vault is not initialized");
     }
 
     byte[] dek = vaultService.unwrapDekForSession(ownerId, masterPassword);
@@ -80,7 +83,8 @@ public class VaultSessionService {
     }
 
     if (session.expiresAt().isBefore(clock.instant())) {
-      sessions.remove(token);
+      VaultSession removed = sessions.remove(token);
+      clearDek(removed);
       throw new VaultLockedException("Invalid or expired vault token");
     }
 
@@ -100,7 +104,8 @@ public class VaultSessionService {
 
     VaultSession session = sessions.get(token);
     if (session != null && ownerId.equals(session.ownerId())) {
-      sessions.remove(token);
+      VaultSession removed = sessions.remove(token);
+      clearDek(removed);
     }
   }
 
@@ -114,7 +119,46 @@ public class VaultSessionService {
       return;
     }
 
-    sessions.entrySet().removeIf(entry -> ownerId.equals(entry.getValue().ownerId()));
+    sessions
+        .entrySet()
+        .removeIf(
+            entry -> {
+              if (!ownerId.equals(entry.getValue().ownerId())) {
+                return false;
+              }
+              clearDek(entry.getValue());
+              return true;
+            });
+  }
+
+  /** Periodically removes expired sessions to keep memory bounded. */
+  @Scheduled(fixedDelayString = "${vault.session.cleanupDelayMs:60000}")
+  public void purgeExpiredSessions() {
+    Instant now = clock.instant();
+    sessions
+        .entrySet()
+        .removeIf(
+            entry -> {
+              VaultSession session = entry.getValue();
+              if (session == null) {
+                return true;
+              }
+              if (!session.expiresAt().isBefore(now)) {
+                return false;
+              }
+              clearDek(session);
+              return true;
+            });
+  }
+
+  private void clearDek(VaultSession session) {
+    if (session == null) {
+      return;
+    }
+    byte[] dek = session.dek();
+    if (dek != null) {
+      Arrays.fill(dek, (byte) 0);
+    }
   }
 
   /**

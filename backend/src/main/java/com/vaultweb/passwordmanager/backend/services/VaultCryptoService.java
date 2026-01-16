@@ -12,6 +12,7 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,7 +23,6 @@ public class VaultCryptoService {
   private static final int PBKDF2_SALT_LEN = 16;
   private static final int PBKDF2_KEY_LEN_BYTES = 32;
 
-  // Tunable; chosen to be slow-ish but not insane for a web request.
   private static final int DEFAULT_PBKDF2_ITERATIONS = 210_000;
 
   private static final int GCM_IV_LENGTH = 12;
@@ -31,9 +31,19 @@ public class VaultCryptoService {
   private static final String KDF_ALGORITHM = "PBKDF2WithHmacSHA256";
 
   private final SecureRandom secureRandom = new SecureRandom();
+  private final int defaultPbkdf2Iterations;
+
+  public VaultCryptoService(
+      @Value("${vault.crypto.pbkdf2.iterations:" + DEFAULT_PBKDF2_ITERATIONS + "}")
+          int defaultPbkdf2Iterations) {
+    if (defaultPbkdf2Iterations <= 0) {
+      throw new IllegalStateException("vault.crypto.pbkdf2.iterations must be > 0");
+    }
+    this.defaultPbkdf2Iterations = defaultPbkdf2Iterations;
+  }
 
   public int defaultIterations() {
-    return DEFAULT_PBKDF2_ITERATIONS;
+    return defaultPbkdf2Iterations;
   }
 
   /** Generates a random salt for PBKDF2 key derivation. */
@@ -222,7 +232,7 @@ public class VaultCryptoService {
       byte[] decoded = Base64.getDecoder().decode(base64);
       if (decoded.length < GCM_IV_LENGTH + 16) {
         throw new IllegalArgumentException(
-            "Invalid cipher text: too short to contain IV and GCM tag");
+            "Invalid ciphertext: too short to contain IV and GCM tag");
       }
 
       ByteBuffer buffer = ByteBuffer.wrap(decoded);

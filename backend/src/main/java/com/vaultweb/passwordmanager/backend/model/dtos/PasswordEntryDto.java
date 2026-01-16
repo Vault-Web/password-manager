@@ -24,11 +24,10 @@ public class PasswordEntryDto {
 
   @NotBlank(message = "Password is required")
   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-  @Size(min = 8, max = 128)
   private String password;
 
   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-  @Size(min = 8, max = 128)
+  @Size(min = 8, max = 1024)
   private String masterPassword;
 
   private String url;

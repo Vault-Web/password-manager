@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,13 @@ public class VaultService {
   private final VaultRepository vaultRepository;
   private final PasswordEntryRepository passwordEntryRepository;
   private final VaultCryptoService crypto;
+
+  @Value("${vault.requireInitialization:false}")
+  private boolean requireInitialization;
+
+  public boolean isInitializationRequired() {
+    return requireInitialization;
+  }
 
   public boolean isInitialized(Long ownerId) {
     return vaultRepository.existsByOwnerId(ownerId);
@@ -141,6 +149,10 @@ public class VaultService {
   public String encryptPasswordForStorage(
       Long ownerId, String masterPassword, String plainPassword) {
     if (!isInitialized(ownerId)) {
+      if (requireInitialization) {
+        throw new VaultNotInitializedException(
+            "Vault must be initialized before storing passwords");
+      }
       return plainPassword;
     }
     if (masterPassword == null || masterPassword.isBlank()) {
@@ -151,8 +163,12 @@ public class VaultService {
     return crypto.encryptPasswordWithDek(dek, plainPassword, ownerId);
   }
 
-  public String encryptPasswordForStorage(Long ownerId, byte[] dek, String plainPassword) {
+  public String encryptPasswordForStorageWithDek(Long ownerId, byte[] dek, String plainPassword) {
     if (!isInitialized(ownerId)) {
+      if (requireInitialization) {
+        throw new VaultNotInitializedException(
+            "Vault must be initialized before storing passwords");
+      }
       return plainPassword;
     }
     if (dek == null) {
@@ -172,6 +188,10 @@ public class VaultService {
   @Transactional
   public String decryptPasswordForReveal(Long ownerId, String masterPassword, PasswordEntry entry) {
     if (!isInitialized(ownerId)) {
+      if (requireInitialization) {
+        throw new VaultNotInitializedException(
+            "Vault must be initialized before revealing passwords");
+      }
       return entry.getPassword();
     }
     if (masterPassword == null || masterPassword.isBlank()) {
@@ -185,8 +205,7 @@ public class VaultService {
       return crypto.decryptPasswordWithDek(dek, stored, ownerId);
     }
 
-    // Legacy: stored value is plaintext (after server-side decrypt). Require master password
-    // anyway.
+    // stored value is plaintext (after server-side decrypt). Require master password anyway
     String migrated = crypto.encryptPasswordWithDek(dek, stored, ownerId);
     entry.setPassword(migrated);
     passwordEntryRepository.save(entry);
@@ -204,6 +223,10 @@ public class VaultService {
   @Transactional
   public String decryptPasswordForReveal(Long ownerId, byte[] dek, PasswordEntry entry) {
     if (!isInitialized(ownerId)) {
+      if (requireInitialization) {
+        throw new VaultNotInitializedException(
+            "Vault must be initialized before revealing passwords");
+      }
       return entry.getPassword();
     }
     if (dek == null) {

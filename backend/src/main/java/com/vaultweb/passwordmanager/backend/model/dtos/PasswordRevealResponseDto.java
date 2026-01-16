@@ -2,7 +2,6 @@ package com.vaultweb.passwordmanager.backend.model.dtos;
 
 import com.vaultweb.passwordmanager.backend.model.PasswordEntry;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -17,7 +16,6 @@ public class PasswordRevealResponseDto {
   private String name;
 
   @Schema(description = "Revealed plaintext password")
-  @Size(min = 8, max = 128)
   private String password;
 
   public static PasswordRevealResponseDto fromEntry(PasswordEntry entry) {

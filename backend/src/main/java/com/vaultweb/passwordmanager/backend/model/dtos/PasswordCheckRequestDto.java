@@ -18,6 +18,6 @@ public class PasswordCheckRequestDto {
       example = "MyStr0ng@Pass123",
       required = true)
   @NotBlank(message = "Password cannot be blank")
-  @Size(min = 6, max = 128, message = "Password must be between 6 and 128 characters")
+  @Size(min = 6, max = 1024, message = "Password must be between 6 and 1024 characters")
   private String password;
 }

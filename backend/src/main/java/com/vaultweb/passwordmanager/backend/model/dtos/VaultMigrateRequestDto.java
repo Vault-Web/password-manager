@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 public class VaultMigrateRequestDto {
 
-  @Size(min = 8, max = 128)
+  @Size(min = 8, max = 1024)
   private String masterPassword;
 }

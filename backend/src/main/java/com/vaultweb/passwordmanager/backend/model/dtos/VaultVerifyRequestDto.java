@@ -8,6 +8,6 @@ import lombok.Data;
 public class VaultVerifyRequestDto {
 
   @NotBlank(message = "Master password is required")
-  @Size(min = 8, max = 128)
+  @Size(min = 8, max = 1024)
   private String masterPassword;
 }
