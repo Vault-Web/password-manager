@@ -3,6 +3,7 @@ package com.vaultweb.passwordmanager.backend.services;
 import com.vaultweb.passwordmanager.backend.exceptions.NotFoundException;
 import com.vaultweb.passwordmanager.backend.model.Category;
 import com.vaultweb.passwordmanager.backend.model.PasswordEntry;
+import com.vaultweb.passwordmanager.backend.model.dtos.PasswordRevealResponseDto;
 import com.vaultweb.passwordmanager.backend.repositories.CategoryRepository;
 import com.vaultweb.passwordmanager.backend.repositories.PasswordEntryRepository;
 import java.util.List;
@@ -16,16 +17,58 @@ public class PasswordEntryService {
 
   private final PasswordEntryRepository repository;
   private final CategoryRepository categoryRepository;
+  private final VaultService vaultService;
+  private final VaultSessionService vaultSessionService;
 
   /**
-   * Creates a new PasswordEntry by saving it to the database.
+   * Create entry in "legacy" mode (no master password / no vault token).
    *
-   * @param entry the PasswordEntry object to be created and saved
-   * @return the saved PasswordEntry object
+   * @return the created PasswordEntry
    */
   public PasswordEntry create(PasswordEntry entry, Long ownerId, Long categoryId) {
     entry.setOwnerId(ownerId);
     entry.setCategory(resolveCategory(categoryId, ownerId));
+    entry.setPassword(vaultService.encryptPasswordForStorage(ownerId, null, entry.getPassword()));
+    return repository.save(entry);
+  }
+
+  /**
+   * Create entry by providing the user's master password.
+   *
+   * @return the created PasswordEntry
+   */
+  public PasswordEntry create(
+      PasswordEntry entry, Long ownerId, Long categoryId, String masterPassword) {
+    entry.setOwnerId(ownerId);
+    entry.setCategory(resolveCategory(categoryId, ownerId));
+    entry.setPassword(
+        vaultService.encryptPasswordForStorage(ownerId, masterPassword, entry.getPassword()));
+    return repository.save(entry);
+  }
+
+  /**
+   * Create entry using either an active vault session token or a master password.
+   *
+   * @return the created PasswordEntry
+   */
+  public PasswordEntry create(
+      PasswordEntry entry,
+      Long ownerId,
+      Long categoryId,
+      String masterPassword,
+      String vaultToken) {
+    entry.setOwnerId(ownerId);
+    entry.setCategory(resolveCategory(categoryId, ownerId));
+
+    if (vaultToken != null && !vaultToken.isBlank()) {
+      byte[] dek = vaultSessionService.requireDek(ownerId, vaultToken);
+      entry.setPassword(
+          vaultService.encryptPasswordForStorageWithDek(ownerId, dek, entry.getPassword()));
+      return repository.save(entry);
+    }
+
+    entry.setPassword(
+        vaultService.encryptPasswordForStorage(ownerId, masterPassword, entry.getPassword()));
     return repository.save(entry);
   }
 
@@ -49,12 +92,9 @@ public class PasswordEntryService {
   }
 
   /**
-   * Updates an existing PasswordEntry with new values provided in the updated object. If the
-   * PasswordEntry with the specified ID does not exist, a NotFoundException is thrown.
+   * Update entry in "legacy" mode (no master password / no vault token).
    *
-   * @param id the ID of the PasswordEntry to be updated
-   * @param updated the PasswordEntry object containing the updated values
-   * @return the updated PasswordEntry after saving the changes
+   * @return the updated PasswordEntry
    */
   public PasswordEntry update(Long id, PasswordEntry updated, Long ownerId, Long categoryId) {
     PasswordEntry existing =
@@ -64,12 +104,110 @@ public class PasswordEntryService {
 
     existing.setName(updated.getName());
     existing.setUsername(updated.getUsername());
-    existing.setPassword(updated.getPassword());
+    existing.setPassword(
+        vaultService.encryptPasswordForStorage(ownerId, null, updated.getPassword()));
     existing.setUrl(updated.getUrl());
     existing.setNotes(updated.getNotes());
     existing.setCategory(resolveCategory(categoryId, ownerId));
 
     return repository.save(existing);
+  }
+
+  /**
+   * Update entry by providing the user's master password.
+   *
+   * @return the updated PasswordEntry
+   */
+  public PasswordEntry update(
+      Long id, PasswordEntry updated, Long ownerId, Long categoryId, String masterPassword) {
+    PasswordEntry existing =
+        repository
+            .findByIdAndOwnerId(id, ownerId)
+            .orElseThrow(() -> new NotFoundException("Password entry not found with id " + id));
+
+    existing.setName(updated.getName());
+    existing.setUsername(updated.getUsername());
+    existing.setPassword(
+        vaultService.encryptPasswordForStorage(ownerId, masterPassword, updated.getPassword()));
+    existing.setUrl(updated.getUrl());
+    existing.setNotes(updated.getNotes());
+    existing.setCategory(resolveCategory(categoryId, ownerId));
+
+    return repository.save(existing);
+  }
+
+  /**
+   * Update entry using either an active vault session token or a master password.
+   *
+   * @return the updated PasswordEntry
+   */
+  public PasswordEntry update(
+      Long id,
+      PasswordEntry updated,
+      Long ownerId,
+      Long categoryId,
+      String masterPassword,
+      String vaultToken) {
+    PasswordEntry existing =
+        repository
+            .findByIdAndOwnerId(id, ownerId)
+            .orElseThrow(() -> new NotFoundException("Password entry not found with id " + id));
+
+    existing.setName(updated.getName());
+    existing.setUsername(updated.getUsername());
+
+    if (vaultToken != null && !vaultToken.isBlank()) {
+      byte[] dek = vaultSessionService.requireDek(ownerId, vaultToken);
+      existing.setPassword(
+          vaultService.encryptPasswordForStorageWithDek(ownerId, dek, updated.getPassword()));
+    } else {
+      existing.setPassword(
+          vaultService.encryptPasswordForStorage(ownerId, masterPassword, updated.getPassword()));
+    }
+
+    existing.setUrl(updated.getUrl());
+    existing.setNotes(updated.getNotes());
+    existing.setCategory(resolveCategory(categoryId, ownerId));
+
+    return repository.save(existing);
+  }
+
+  /**
+   * Reveal (decrypt) a password by providing the user's master password.
+   *
+   * @return the PasswordRevealResponseDto containing the revealed password
+   */
+  public PasswordRevealResponseDto reveal(Long id, Long ownerId, String masterPassword) {
+    PasswordEntry entry =
+        repository
+            .findByIdAndOwnerId(id, ownerId)
+            .orElseThrow(() -> new NotFoundException("Password entry not found with id " + id));
+
+    String plainPassword = vaultService.decryptPasswordForReveal(ownerId, masterPassword, entry);
+    return new PasswordRevealResponseDto(entry.getId(), entry.getName(), plainPassword);
+  }
+
+  /**
+   * Reveal (decrypt) a password using either an active vault session token or a master password.
+   *
+   * @return the PasswordRevealResponseDto containing the revealed password
+   */
+  public PasswordRevealResponseDto reveal(
+      Long id, Long ownerId, String masterPassword, String vaultToken) {
+    PasswordEntry entry =
+        repository
+            .findByIdAndOwnerId(id, ownerId)
+            .orElseThrow(() -> new NotFoundException("Password entry not found with id " + id));
+
+    String plainPassword;
+    if (vaultToken != null && !vaultToken.isBlank()) {
+      byte[] dek = vaultSessionService.requireDek(ownerId, vaultToken);
+      plainPassword = vaultService.decryptPasswordForReveal(ownerId, dek, entry);
+    } else {
+      plainPassword = vaultService.decryptPasswordForReveal(ownerId, masterPassword, entry);
+    }
+
+    return new PasswordRevealResponseDto(entry.getId(), entry.getName(), plainPassword);
   }
 
   /**
@@ -86,6 +224,13 @@ public class PasswordEntryService {
     repository.delete(entry);
   }
 
+  /**
+   * Resolves the Category entity for the given categoryId and ownerId.
+   *
+   * @param categoryId
+   * @param ownerId
+   * @return the Category entity, or null if categoryId is null
+   */
   private Category resolveCategory(Long categoryId, Long ownerId) {
     if (categoryId == null) {
       return null;

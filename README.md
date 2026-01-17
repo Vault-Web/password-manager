@@ -71,6 +71,28 @@ The backend runs on port 8091 (can be changed in application.properties). Make s
 ./mvnw spring-boot:run
 ```
 
+### 4. PBKDF2 Iterations (Vault Master Password)
+The vault uses PBKDF2-HMAC-SHA256 to derive a key-encryption-key (KEK) from the master password.
+The default iteration count is **210000** (chosen as a reasonable baseline around 2024) and can be
+adjusted without code changes via:
+
+- `vault.crypto.pbkdf2.iterations` in `backend/src/main/resources/application.properties`
+
+Increasing this value improves resistance against offline guessing but increases latency for
+vault operations like setup/verify/unlock/rotate.
+
+### 5. Vault Initialization Policy (Legacy Compatibility)
+By default, the service supports a legacy compatibility mode:
+
+- If a user has **not** initialized a vault yet, passwords can still be stored and revealed.
+- In this mode, passwords are protected only by the server-side `AttributeEncryptor` (database at-rest encryption),
+  and are **not** additionally protected by the per-user vault master password.
+
+To avoid mixed protection levels (and the "security downgrade" path), you can enforce that every
+user must initialize a vault before storing/revealing passwords by setting:
+
+- `vault.requireInitialization=true` in `backend/src/main/resources/application.properties`
+
 ### IntelliJ / IDE Note:
 If you start the application directly via your IDE (e.g., IntelliJ IDEA), you must add the ENCRYPTION_SECRET key in the Run/Debug Configurations under the Environment Variables section, as the IDE does not automatically use shell variables.
 

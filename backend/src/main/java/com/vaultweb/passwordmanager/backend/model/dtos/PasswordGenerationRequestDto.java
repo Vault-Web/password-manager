@@ -18,7 +18,7 @@ public class PasswordGenerationRequestDto {
       maximum = "64")
   @NotNull(message = "Password length cannot be null")
   @Min(value = 6, message = "Password length must be at least 6")
-  @Max(value = 128, message = "Password length must not exceed 64")
+  @Max(value = 64, message = "Password length must not exceed 64")
   Integer length = 12;
 
   @Schema(description = "Include uppercase letters (A-Z)", example = "true")

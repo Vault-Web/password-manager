@@ -42,6 +42,7 @@ public class PasswordEntry {
 
   @NotBlank(message = "Password is required")
   @Convert(converter = AttributeEncryptor.class)
+  @Column(columnDefinition = "TEXT")
   private String password;
 
   private String url;

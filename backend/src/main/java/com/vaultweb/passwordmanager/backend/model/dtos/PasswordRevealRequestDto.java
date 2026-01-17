@@ -1,0 +1,11 @@
+package com.vaultweb.passwordmanager.backend.model.dtos;
+
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+
+@Data
+public class PasswordRevealRequestDto {
+
+  @Size(min = 8, max = 1024)
+  private String masterPassword;
+}

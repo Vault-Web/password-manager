@@ -35,6 +35,27 @@ public class GlobalExceptionHandler {
     return buildErrorResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS");
   }
 
+  @ExceptionHandler(ConflictException.class)
+  public ResponseEntity<Map<String, Object>> handleConflict(
+      ConflictException ex, WebRequest request) {
+    log.warn("Conflict - Path: {}", request.getDescription(false));
+    return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT, "CONFLICT");
+  }
+
+  @ExceptionHandler(VaultNotInitializedException.class)
+  public ResponseEntity<Map<String, Object>> handleVaultNotInitialized(
+      VaultNotInitializedException ex, WebRequest request) {
+    log.warn("Vault not initialized - Path: {}", request.getDescription(false));
+    return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT, "VAULT_NOT_INITIALIZED");
+  }
+
+  @ExceptionHandler(VaultLockedException.class)
+  public ResponseEntity<Map<String, Object>> handleVaultLocked(
+      VaultLockedException ex, WebRequest request) {
+    log.warn("Vault locked - Path: {}", request.getDescription(false));
+    return buildErrorResponse(ex.getMessage(), HttpStatus.PRECONDITION_REQUIRED, "VAULT_LOCKED");
+  }
+
   @ExceptionHandler(NotFoundException.class)
   public ResponseEntity<Map<String, Object>> handleNotFound(
       NotFoundException ex, WebRequest request) {

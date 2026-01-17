@@ -6,10 +6,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,29 +14,30 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Entity
-@Table(name = "categories")
-public class Category {
+@Table(name = "user_vaults")
+public class Vault {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @NotNull(message = "Owner is required")
-  @Column(name = "owner_id", nullable = false)
+  @Column(name = "owner_id", nullable = false, unique = true)
   private Long ownerId;
 
-  @NotBlank(message = "Category name is required")
-  @Size(max = 60)
-  private String name;
+  @Column(name = "kdf_salt", nullable = false, length = 128)
+  private String kdfSalt;
 
-  @Pattern(regexp = "^#[0-9a-fA-F]{6}$", message = "Color must be a hex value like #AABBCC")
-  private String color;
+  @Column(name = "kdf_iterations", nullable = false)
+  private Integer kdfIterations;
 
-  @Size(max = 200)
-  private String description;
+  @Column(name = "wrapped_dek", nullable = false, length = 1024)
+  private String wrappedDek;
+
+  @Column(name = "verifier", nullable = false, length = 128)
+  private String verifier;
 
   @CreationTimestamp private LocalDateTime createdAt;
 

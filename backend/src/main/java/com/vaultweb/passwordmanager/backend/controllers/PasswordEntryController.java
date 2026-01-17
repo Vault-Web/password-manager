@@ -1,9 +1,14 @@
 package com.vaultweb.passwordmanager.backend.controllers;
 
+import com.vaultweb.passwordmanager.backend.exceptions.VaultLockedException;
+import com.vaultweb.passwordmanager.backend.exceptions.VaultNotInitializedException;
 import com.vaultweb.passwordmanager.backend.model.PasswordEntry;
 import com.vaultweb.passwordmanager.backend.model.dtos.PasswordEntryDto;
+import com.vaultweb.passwordmanager.backend.model.dtos.PasswordRevealRequestDto;
+import com.vaultweb.passwordmanager.backend.model.dtos.PasswordRevealResponseDto;
 import com.vaultweb.passwordmanager.backend.security.AuthenticatedUser;
 import com.vaultweb.passwordmanager.backend.services.PasswordEntryService;
+import com.vaultweb.passwordmanager.backend.services.VaultService;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -18,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class PasswordEntryController {
 
   private final PasswordEntryService service;
+  private final VaultService vaultService;
 
   /**
    * Creates a new password entry based on the provided data and returns the created entry.
@@ -29,9 +35,16 @@ public class PasswordEntryController {
    */
   @PostMapping
   public ResponseEntity<PasswordEntryDto> create(
-      @AuthenticationPrincipal AuthenticatedUser user, @Valid @RequestBody PasswordEntryDto dto) {
+      @AuthenticationPrincipal AuthenticatedUser user,
+      @RequestHeader(value = "X-Vault-Token", required = false) String vaultToken,
+      @Valid @RequestBody PasswordEntryDto dto) {
     PasswordEntry created =
-        service.create(new PasswordEntry(dto), user.userId(), dto.getCategoryId());
+        service.create(
+            new PasswordEntry(dto),
+            user.userId(),
+            dto.getCategoryId(),
+            dto.getMasterPassword(),
+            vaultToken);
     return ResponseEntity.created(URI.create("/api/passwords/" + created.getId()))
         .body(new PasswordEntryDto(created));
   }
@@ -67,6 +80,50 @@ public class PasswordEntryController {
   }
 
   /**
+   * Legacy reveal endpoint for setups without a master password vault.
+   *
+   * <p>If a vault is initialized, revealing requires the master password and callers must use the
+   * POST variant.
+   */
+  @GetMapping("/{id}/reveal")
+  public ResponseEntity<PasswordRevealResponseDto> reveal(
+      @AuthenticationPrincipal AuthenticatedUser user, @PathVariable Long id) {
+    if (vaultService.isInitializationRequired()) {
+      throw new VaultNotInitializedException(
+          "Vault must be initialized. Use POST /api/vault/setup before revealing passwords.");
+    }
+    if (vaultService.isInitialized(user.userId())) {
+      throw new VaultLockedException(
+          "Master password required. Use POST /api/passwords/{id}/reveal with masterPassword.");
+    }
+
+    return service
+        .getById(id, user.userId())
+        .map(PasswordRevealResponseDto::fromEntry)
+        .map(ResponseEntity::ok)
+        .orElse(ResponseEntity.notFound().build());
+  }
+
+  /** Reveals a password for vault-enabled users. Requires masterPassword in the request body. */
+  @PostMapping("/{id}/reveal")
+  public ResponseEntity<PasswordRevealResponseDto> revealWithMasterPassword(
+      @AuthenticationPrincipal AuthenticatedUser user,
+      @PathVariable Long id,
+      @RequestHeader(value = "X-Vault-Token", required = false) String vaultToken,
+      @RequestBody(required = false) PasswordRevealRequestDto dto) {
+    String masterPassword = dto != null ? dto.getMasterPassword() : null;
+
+    if (vaultToken == null || vaultToken.isBlank()) {
+      if (masterPassword == null || masterPassword.isBlank()) {
+        throw new IllegalArgumentException(
+            "masterPassword is required when no X-Vault-Token is provided");
+      }
+    }
+
+    return ResponseEntity.ok(service.reveal(id, user.userId(), masterPassword, vaultToken));
+  }
+
+  /**
    * Updates an existing password entry identified by its unique ID with the provided data.
    *
    * @param id the unique identifier of the password entry to be updated
@@ -78,9 +135,16 @@ public class PasswordEntryController {
   public ResponseEntity<PasswordEntryDto> update(
       @AuthenticationPrincipal AuthenticatedUser user,
       @PathVariable Long id,
+      @RequestHeader(value = "X-Vault-Token", required = false) String vaultToken,
       @Valid @RequestBody PasswordEntryDto dto) {
     PasswordEntry updated =
-        service.update(id, new PasswordEntry(dto), user.userId(), dto.getCategoryId());
+        service.update(
+            id,
+            new PasswordEntry(dto),
+            user.userId(),
+            dto.getCategoryId(),
+            dto.getMasterPassword(),
+            vaultToken);
     return ResponseEntity.ok(new PasswordEntryDto(updated));
   }
 

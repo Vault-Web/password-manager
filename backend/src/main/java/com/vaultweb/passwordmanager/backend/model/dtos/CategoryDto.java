@@ -2,6 +2,7 @@ package com.vaultweb.passwordmanager.backend.model.dtos;
 
 import com.vaultweb.passwordmanager.backend.model.Category;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,7 +19,7 @@ public class CategoryDto {
   @Size(max = 60)
   private String name;
 
-  @Size(max = 7, message = "Color must be a hex value like #AABBCC")
+  @Pattern(regexp = "^#[0-9a-fA-F]{6}$", message = "Color must be a hex value like #AABBCC")
   private String color;
 
   @Size(max = 200)

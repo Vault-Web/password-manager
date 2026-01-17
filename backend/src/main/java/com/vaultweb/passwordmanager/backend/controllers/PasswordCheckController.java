@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -44,7 +45,7 @@ public class PasswordCheckController {
                     schema = @Schema(implementation = PasswordCheckResponseDto.class)))
       })
   @PostMapping("/check")
-  public PasswordCheckResponseDto check(@RequestBody PasswordCheckRequestDto request) {
+  public PasswordCheckResponseDto check(@Valid @RequestBody PasswordCheckRequestDto request) {
     String password = request.getPassword();
 
     int breachCount = breachedService.checkIfBreached(password);
