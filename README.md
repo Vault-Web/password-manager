@@ -32,6 +32,9 @@ Password Manager relies on the **Vault Web Docker environment** for PostgreSQL a
 
 ---
 
+
+---
+
 ### 1. Clone the Repository
 
 ```bash
@@ -66,10 +69,39 @@ set ENCRYPTION_SECRET="<Your-generated-Base64-key>"
 > ⚠️ **Make sure PostgreSQL from the Vault Web Docker setup is running** before starting Cloud Page. Run `docker compose up -d` in the Vault Web repository if not already running. The database credentials are inherited from the Vault Web `.env` setup. Do **not** use production secrets during local development.
 
 ### 3. Start the backend
-The backend runs on port 8091 (can be changed in application.properties). Make sure the Vault Web Docker stack is already running (PostgreSQL & pgAdmin).
+The backend runs on Port 8091. It can run in **HTTP** or **HTTPS** mode:
+
+### HTTP Mode (API testing only)
+
+For backend-only development and API testing without the frontend.
+
 ```bash
+cd backend
 ./mvnw spring-boot:run
 ```
+
+- API: [http://localhost:8091](http://localhost:8091)
+- Swagger UI: [http://localhost:8091/swagger-ui.html](http://localhost:8091/swagger-ui.html)
+
+⚠️ **Note:** The frontend is configured to use HTTPS and will **not connect** to HTTP mode.
+
+### HTTPS Mode (full-stack development)
+
+For development with the Angular frontend, as it requires HTTPS for secure cookies and JWT authentication.
+
+**Start with HTTPS:**
+
+```bash
+cd backend
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+- API: [https://localhost:8091](https://localhost:8091)
+- Swagger UI: [https://localhost:8091/swagger-ui.html](https://localhost:8091/swagger-ui.html)
+
+⚠️ **Browser Warning:** You will see a security warning about a self-signed certificate. This is normal for local development. Accept the warning to proceed.
+
+> **Database Configuration:** Ensure the database values in `backend/src/main/resources/application.properties` match the `.env` file.
 
 ### 4. PBKDF2 Iterations (Vault Master Password)
 The vault uses PBKDF2-HMAC-SHA256 to derive a key-encryption-key (KEK) from the master password.
