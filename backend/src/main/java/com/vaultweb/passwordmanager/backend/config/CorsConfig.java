@@ -14,7 +14,28 @@ public class CorsConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
-    config.setAllowedOrigins(List.of("https://localhost:4200"));
+    config.setAllowedOriginPatterns(
+        List.of(
+            "http://localhost",
+            "https://localhost",
+            "http://localhost:*",
+            "https://localhost:*",
+            "http://127.0.0.1",
+            "https://127.0.0.1",
+            "http://127.0.0.1:*",
+            "https://127.0.0.1:*",
+            "http://100.*.*.*",
+            "https://100.*.*.*",
+            "http://100.*.*.*:*",
+            "https://100.*.*.*:*",
+            "http://*.vpn.internal",
+            "https://*.vpn.internal",
+            "http://*.vpn.internal:*",
+            "https://*.vpn.internal:*",
+            "http://vault.*",
+            "https://vault.*",
+            "http://vault.*:*",
+            "https://vault.*:*"));
     config.setAllowedHeaders(
         Arrays.asList(
             "Authorization",
