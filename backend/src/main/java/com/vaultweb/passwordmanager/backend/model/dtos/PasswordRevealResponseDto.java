@@ -4,6 +4,7 @@ import com.vaultweb.passwordmanager.backend.model.PasswordEntry;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.ToString;
 
 @Data
 @AllArgsConstructor
@@ -16,6 +17,7 @@ public class PasswordRevealResponseDto {
   private String name;
 
   @Schema(description = "Revealed plaintext password")
+  @ToString.Exclude
   private String password;
 
   public static PasswordRevealResponseDto fromEntry(PasswordEntry entry) {

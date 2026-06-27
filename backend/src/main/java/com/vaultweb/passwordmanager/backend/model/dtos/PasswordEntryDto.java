@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @AllArgsConstructor
@@ -24,10 +25,12 @@ public class PasswordEntryDto {
 
   @NotBlank(message = "Password is required")
   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+  @ToString.Exclude
   private String password;
 
   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
   @Size(min = 8, max = 1024)
+  @ToString.Exclude
   private String masterPassword;
 
   private String url;
