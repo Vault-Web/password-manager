@@ -2,6 +2,7 @@ package com.vaultweb.passwordmanager.backend.model.dtos;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
 class DtoToStringSecrecyTest {
@@ -50,5 +51,30 @@ class DtoToStringSecrecyTest {
     String result = dto.toString();
     assertFalse(result.contains(SECRET));
     assertFalse(result.contains(OTHER_SECRET));
+  }
+
+  @Test
+  void vaultMigrateRequestDto_toStringDoesNotLeakMasterPassword() {
+    VaultMigrateRequestDto dto = new VaultMigrateRequestDto();
+    dto.setMasterPassword(SECRET);
+    assertFalse(dto.toString().contains(SECRET));
+  }
+
+  @Test
+  void passwordGenerationResponseDto_toStringDoesNotLeakPassword() {
+    PasswordGenerationResponseDto dto = new PasswordGenerationResponseDto(SECRET);
+    assertFalse(dto.toString().contains(SECRET));
+  }
+
+  @Test
+  void passwordRevealResponseDto_toStringDoesNotLeakPassword() {
+    PasswordRevealResponseDto dto = new PasswordRevealResponseDto(1L, "GitHub", SECRET);
+    assertFalse(dto.toString().contains(SECRET));
+  }
+
+  @Test
+  void vaultUnlockResponseDto_toStringDoesNotLeakToken() {
+    VaultUnlockResponseDto dto = new VaultUnlockResponseDto(SECRET, Instant.ofEpochMilli(0));
+    assertFalse(dto.toString().contains(SECRET));
   }
 }
