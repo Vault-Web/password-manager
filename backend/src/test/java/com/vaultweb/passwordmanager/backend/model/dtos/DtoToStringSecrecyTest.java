@@ -77,4 +77,26 @@ class DtoToStringSecrecyTest {
     VaultUnlockResponseDto dto = new VaultUnlockResponseDto(SECRET, Instant.ofEpochMilli(0));
     assertFalse(dto.toString().contains(SECRET));
   }
+
+  @Test
+  void vaultExportRequestDto_toStringDoesNotLeakSecrets() {
+    VaultExportRequestDto dto = new VaultExportRequestDto();
+    dto.setMasterPassword(SECRET);
+    dto.setExportPassword(OTHER_SECRET);
+    String result = dto.toString();
+    assertFalse(result.contains(SECRET));
+    assertFalse(result.contains(OTHER_SECRET));
+  }
+
+  @Test
+  void vaultImportRequestDto_toStringDoesNotLeakSecretsOrData() {
+    VaultImportRequestDto dto = new VaultImportRequestDto();
+    dto.setData(SECRET);
+    dto.setImportPassword(OTHER_SECRET);
+    dto.setMasterPassword("yet-another-top-secret");
+    String result = dto.toString();
+    assertFalse(result.contains(SECRET));
+    assertFalse(result.contains(OTHER_SECRET));
+    assertFalse(result.contains("yet-another-top-secret"));
+  }
 }
