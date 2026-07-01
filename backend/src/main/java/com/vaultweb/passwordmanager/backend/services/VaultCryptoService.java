@@ -1,11 +1,13 @@
 package com.vaultweb.passwordmanager.backend.services;
 
+import com.vaultweb.passwordmanager.backend.exceptions.InvalidCredentialsException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Base64;
+import javax.crypto.AEADBadTagException;
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
 import javax.crypto.SecretKeyFactory;
@@ -20,10 +22,16 @@ public class VaultCryptoService {
 
   public static final String PASSWORD_PREFIX = "v1:";
 
+  /** Magic prefix identifying a password-encrypted vault export envelope. */
+  public static final String EXPORT_PREFIX = "VWENC1:";
+
   private static final int PBKDF2_SALT_LEN = 16;
   private static final int PBKDF2_KEY_LEN_BYTES = 32;
 
   private static final int DEFAULT_PBKDF2_ITERATIONS = 210_000;
+
+  /** Defensive upper bound on the PBKDF2 iterations read from an untrusted export envelope. */
+  private static final int MAX_EXPORT_ITERATIONS = 10_000_000;
 
   private static final int GCM_IV_LENGTH = 12;
   private static final int GCM_TAG_LENGTH = 128;
@@ -177,6 +185,104 @@ public class VaultCryptoService {
     String blob = encrypted.substring(PASSWORD_PREFIX.length());
     byte[] plainBytes = decryptAesGcmFromBase64(dekBytes, blob, aadForOwner(ownerId));
     return new String(plainBytes, StandardCharsets.UTF_8);
+  }
+
+  /**
+   * Checks whether the given value is a password-encrypted vault export envelope.
+   *
+   * @param value the value to inspect
+   * @return true if the value carries the export envelope prefix
+   */
+  public boolean isEncryptedExport(String value) {
+    return value != null && value.startsWith(EXPORT_PREFIX);
+  }
+
+  /**
+   * Encrypts arbitrary bytes under a password into a self-contained, portable envelope.
+   *
+   * <p>The envelope is {@code EXPORT_PREFIX + base64(iterations | salt | iv | ciphertext+tag)} and
+   * is deliberately not bound to an owner (no AAD) so an export can be restored on any vault
+   * instance using only the export password.
+   *
+   * @param plaintext the bytes to encrypt
+   * @param password the export password
+   * @return the encrypted envelope string
+   */
+  public String encryptWithPassword(byte[] plaintext, String password) {
+    byte[] salt = randomSalt();
+    int iterations = defaultPbkdf2Iterations;
+    byte[] key = deriveKek(password, salt, iterations);
+    try {
+      byte[] iv = new byte[GCM_IV_LENGTH];
+      secureRandom.nextBytes(iv);
+
+      Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+      cipher.init(
+          Cipher.ENCRYPT_MODE,
+          new SecretKeySpec(key, "AES"),
+          new GCMParameterSpec(GCM_TAG_LENGTH, iv));
+      byte[] ciphertext = cipher.doFinal(plaintext);
+
+      ByteBuffer buffer =
+          ByteBuffer.allocate(Integer.BYTES + salt.length + iv.length + ciphertext.length);
+      buffer.putInt(iterations);
+      buffer.put(salt);
+      buffer.put(iv);
+      buffer.put(ciphertext);
+      return EXPORT_PREFIX + Base64.getEncoder().encodeToString(buffer.array());
+    } catch (GeneralSecurityException e) {
+      throw new IllegalStateException("Export encryption failed", e);
+    }
+  }
+
+  /**
+   * Decrypts an envelope produced by {@link #encryptWithPassword(byte[], String)}.
+   *
+   * @param encrypted the encrypted envelope string
+   * @param password the export password
+   * @return the decrypted plaintext bytes
+   * @throws InvalidCredentialsException if the password is wrong or the data was tampered with
+   * @throws IllegalArgumentException if the envelope is not well-formed
+   */
+  public byte[] decryptWithPassword(String encrypted, String password) {
+    if (!isEncryptedExport(encrypted)) {
+      throw new IllegalArgumentException("Not an encrypted vault export");
+    }
+    byte[] decoded;
+    try {
+      decoded = Base64.getDecoder().decode(encrypted.substring(EXPORT_PREFIX.length()));
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("Malformed vault export", e);
+    }
+    if (decoded.length < Integer.BYTES + PBKDF2_SALT_LEN + GCM_IV_LENGTH + (GCM_TAG_LENGTH / 8)) {
+      throw new IllegalArgumentException("Malformed vault export: too short");
+    }
+
+    ByteBuffer buffer = ByteBuffer.wrap(decoded);
+    int iterations = buffer.getInt();
+    if (iterations <= 0 || iterations > MAX_EXPORT_ITERATIONS) {
+      throw new IllegalArgumentException("Malformed vault export: invalid iteration count");
+    }
+    byte[] salt = new byte[PBKDF2_SALT_LEN];
+    buffer.get(salt);
+    byte[] iv = new byte[GCM_IV_LENGTH];
+    buffer.get(iv);
+    byte[] ciphertext = new byte[buffer.remaining()];
+    buffer.get(ciphertext);
+
+    byte[] key = deriveKek(password, salt, iterations);
+    try {
+      Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+      cipher.init(
+          Cipher.DECRYPT_MODE,
+          new SecretKeySpec(key, "AES"),
+          new GCMParameterSpec(GCM_TAG_LENGTH, iv));
+      return cipher.doFinal(ciphertext);
+    } catch (AEADBadTagException e) {
+      throw new InvalidCredentialsException("Invalid export password or corrupted export file");
+    } catch (GeneralSecurityException e) {
+      throw new IllegalStateException("Export decryption failed", e);
+    }
   }
 
   /**
