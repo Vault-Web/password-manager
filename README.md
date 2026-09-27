@@ -1,5 +1,12 @@
 # Password Manager
 
+> **Archived:** This repository is kept public as historical project context.
+> Vault-Web now recommends and deploys Vaultwarden for password management
+> instead of maintaining a custom password vault. The switch was made to rely on
+> a mature Bitwarden-compatible ecosystem with dedicated clients, browser
+> extensions, and a security model that keeps master-password handling out of
+> the Vault-Web portal.
+
 **Password Manager** is a backend service in the Vault Web ecosystem for securely storing, managing, and retrieving passwords.  
 It provides APIs for creating, updating, deleting, and retrieving passwords and categories, similar to a secure digital vault.
 
