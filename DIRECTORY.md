@@ -20,6 +20,7 @@
                 - 📄 [PasswordEntryController.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/controllers/PasswordEntryController.java)
                 - 📄 [PasswordGenerationController.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/controllers/PasswordGenerationController.java)
                 - 📄 [VaultController.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/controllers/VaultController.java)
+                - 📄 [VaultPortabilityController.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/controllers/VaultPortabilityController.java)
               - 📁 **exceptions**
                 - 📄 [ConflictException.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/exceptions/ConflictException.java)
                 - 📄 [GlobalExceptionHandler.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/exceptions/GlobalExceptionHandler.java)
@@ -42,6 +43,9 @@
                   - 📄 [PasswordGenerationResponseDto.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/model/dtos/PasswordGenerationResponseDto.java)
                   - 📄 [PasswordRevealRequestDto.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/model/dtos/PasswordRevealRequestDto.java)
                   - 📄 [PasswordRevealResponseDto.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/model/dtos/PasswordRevealResponseDto.java)
+                  - 📄 [VaultExportRequestDto.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/model/dtos/VaultExportRequestDto.java)
+                  - 📄 [VaultImportRequestDto.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/model/dtos/VaultImportRequestDto.java)
+                  - 📄 [VaultImportResponseDto.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/model/dtos/VaultImportResponseDto.java)
                   - 📄 [VaultMigrateRequestDto.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/model/dtos/VaultMigrateRequestDto.java)
                   - 📄 [VaultMigrateResponseDto.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/model/dtos/VaultMigrateResponseDto.java)
                   - 📄 [VaultRotateRequestDto.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/model/dtos/VaultRotateRequestDto.java)
@@ -68,8 +72,11 @@
                 - 📄 [PasswordGenerationService.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/services/PasswordGenerationService.java)
                 - 📄 [PasswordStrengthService.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/services/PasswordStrengthService.java)
                 - 📄 [VaultCryptoService.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/services/VaultCryptoService.java)
+                - 📄 [VaultPortabilityService.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/services/VaultPortabilityService.java)
                 - 📄 [VaultService.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/services/VaultService.java)
                 - 📄 [VaultSessionService.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/services/VaultSessionService.java)
+              - 📁 **support**
+                - 📄 [CsvSupport.java](backend/src/main/java/com/vaultweb/passwordmanager/backend/support/CsvSupport.java)
   - 📁 **test**
     - 📁 **java**
       - 📁 **com**
@@ -77,6 +84,13 @@
           - 📁 **passwordmanager**
             - 📁 **backend**
               - 📄 [BackendApplicationTests.java](backend/src/test/java/com/vaultweb/passwordmanager/backend/BackendApplicationTests.java)
+              - 📁 **model**
+                - 📁 **dtos**
+                  - 📄 [DtoToStringSecrecyTest.java](backend/src/test/java/com/vaultweb/passwordmanager/backend/model/dtos/DtoToStringSecrecyTest.java)
               - 📁 **services**
                 - 📄 [PasswordGenerationServiceTest.java](backend/src/test/java/com/vaultweb/passwordmanager/backend/services/PasswordGenerationServiceTest.java)
                 - 📄 [PasswordStrengthServiceTest.java](backend/src/test/java/com/vaultweb/passwordmanager/backend/services/PasswordStrengthServiceTest.java)
+                - 📄 [VaultCryptoServiceExportTest.java](backend/src/test/java/com/vaultweb/passwordmanager/backend/services/VaultCryptoServiceExportTest.java)
+                - 📄 [VaultPortabilityServiceTest.java](backend/src/test/java/com/vaultweb/passwordmanager/backend/services/VaultPortabilityServiceTest.java)
+              - 📁 **support**
+                - 📄 [CsvSupportTest.java](backend/src/test/java/com/vaultweb/passwordmanager/backend/support/CsvSupportTest.java)
